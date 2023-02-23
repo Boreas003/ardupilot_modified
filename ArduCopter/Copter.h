@@ -216,6 +216,9 @@ public:
     friend class ModeZigZag;
     friend class ModeAutorotate;
     friend class ModeTurtle;
+    friend class ModeGround;
+    friend class ModeStandby;
+    friend class ModeTest;
 
     Copter(void);
 
@@ -982,6 +985,15 @@ private:
 #if MODE_TURTLE_ENABLED == ENABLED
     ModeTurtle mode_turtle;
 #endif
+#if MODE_GROUND_ENABLED == ENABLED
+    ModeGround mode_ground;
+#endif
+#if MODE_STANDBY_ENABLED == ENABLED
+    ModeStandby mode_standby;
+#endif
+#if MODE_TEST_ENABLED == ENABLED
+    ModeTest mode_test;
+#endif
 
     // mode.cpp
     Mode *mode_from_mode_num(const Mode::Number mode);
@@ -989,6 +1001,7 @@ private:
 
 public:
     void failsafe_check();      // failsafe.cpp
+    uint8_t get_mode_p() {return (uint8_t)flightmode->mode_number(); }
 };
 
 extern Copter copter;

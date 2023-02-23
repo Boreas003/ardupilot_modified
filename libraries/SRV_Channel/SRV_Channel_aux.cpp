@@ -42,8 +42,104 @@ void SRV_Channel::output_ch(void)
     case k_rcin1 ... k_rcin16: // rc pass-thru
         passthrough_from = int8_t((int16_t)function - k_rcin1);
         break;
+    case k_scripting1: // rob servo 9
+    	passthrough_from = 16;
+    	break;
+    case k_scripting2: // rob servo 11
+        	passthrough_from = 17;
+        	break;
+    case k_scripting3: // rob servo 13
+        	passthrough_from = 18;
+        	break;
+    case k_scripting4: // rob servo 15
+        	passthrough_from = 19;
+        	break;
     }
-    if (passthrough_from != -1) {
+    // roll or pitch channel mid place 1495
+    if (passthrough_from == 17){
+    	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+    	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+    	if (c1 && c2){
+    		if (SRV_Channels::passthrough_disabled()){
+    			output_pwm = (c1->get_radio_trim() + c2->get_radio_trim() - 1495);
+    		} else {
+    			const int16_t radio_in = (c1->get_radio_in() + c2->get_radio_in() - 1495);
+    			if (!ign_small_rcin_changes) {
+    				output_pwm = radio_in;
+    				previous_radio_in = radio_in;
+    			} else {
+    				if (abs(radio_in - previous_radio_in) > (c1->get_dead_zone()+c2->get_dead_zone() - 1495)){
+    					output_pwm = radio_in;
+    					ign_small_rcin_changes = false;
+    				}
+    			}
+    		}
+    	}
+    }
+    if (passthrough_from == 16){
+        	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+        	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+        	if (c1 && c2){
+        		if (SRV_Channels::passthrough_disabled()){
+        			output_pwm = (1495 - c1->get_radio_trim() + c2->get_radio_trim());
+        		} else {
+        			const int16_t radio_in = (1495 - c1->get_radio_in() + c2->get_radio_in());
+        			if (!ign_small_rcin_changes) {
+        				output_pwm = radio_in;
+        				previous_radio_in = radio_in;
+        			} else {
+        				if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone()+c2->get_dead_zone())){
+        					output_pwm = radio_in;
+        					ign_small_rcin_changes = false;
+        				}
+        			}
+        		}
+        	}
+        }
+    if (passthrough_from == 18){
+            	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+            	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+            	if (c1 && c2){
+            		if (SRV_Channels::passthrough_disabled()){
+            			output_pwm = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+            		} else {
+            			const int16_t radio_in = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+            			if (!ign_small_rcin_changes) {
+            				output_pwm = radio_in;
+            				previous_radio_in = radio_in;
+            			} else {
+            				if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone() - c2->get_dead_zone() + 1495 + 1495)){
+            					output_pwm = radio_in;
+            					ign_small_rcin_changes = false;
+            				}
+            			}
+            		}
+            	}
+            }
+    if (passthrough_from == 19){
+        	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+        	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+        	if (c1 && c2){
+        		if (SRV_Channels::passthrough_disabled()){
+        			output_pwm = (c1->get_radio_trim() - c2->get_radio_trim() + 1495);
+        		} else {
+        			const int16_t radio_in = (c1->get_radio_in() - c2->get_radio_in() + 1495);
+        			if (!ign_small_rcin_changes) {
+        				output_pwm = radio_in;
+        				previous_radio_in = radio_in;
+        			} else {
+        				if (abs(radio_in - previous_radio_in) > (c1->get_dead_zone()-c2->get_dead_zone() + 1495)){
+        					output_pwm = radio_in;
+        					ign_small_rcin_changes = false;
+        				}
+        			}
+        		}
+        	}
+        }
+
+
+
+    if (passthrough_from != -1 && passthrough_from < 16) {
         // we are doing passthrough from input to output for this channel
         RC_Channel *c = rc().channel(passthrough_from);
         if (c) {
@@ -509,6 +605,18 @@ bool SRV_Channels::find_channel(SRV_Channel::Aux_servo_function_t function, uint
         }
     }
     return false;
+}
+
+// return channel that a function is assigned to
+SRV_Channel *SRV_Channels::return_channel(SRV_Channel::Aux_servo_function_t function)
+{
+	for (uint8_t i=0; i<NUM_SERVO_CHANNELS; i++)
+	{
+		if (channels[i].function == function) {
+			return &channels[i];
+		}
+	}
+	return nullptr;
 }
 
 /*

@@ -43,6 +43,10 @@
 #ifndef AP_MOTORS_FRAME_OCTAQUAD_ENABLED
 #define AP_MOTORS_FRAME_OCTAQUAD_ENABLED 1
 #endif
+// UUV specified
+#ifndef AP_MOTORS_FRAME_UUV_ENABLED
+#define AP_MOTORS_FRAME_UUV_ENABLED 1
+#endif
 
 // motor update rate
 #define AP_MOTORS_SPEED_DEFAULT     490 // default output rate to the motors
@@ -70,6 +74,8 @@ public:
         MOTOR_FRAME_SCRIPTING_MATRIX = 15,
         MOTOR_FRAME_6DOF_SCRIPTING = 16,
         MOTOR_FRAME_DYNAMIC_SCRIPTING_MATRIX = 17,
+		// UUV specified
+		MOTOR_FRAME_UUV = 18,
     };
 
     // return string corresponding to frame_class

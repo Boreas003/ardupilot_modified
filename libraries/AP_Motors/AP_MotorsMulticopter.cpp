@@ -143,7 +143,7 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
     // @Description: Disables motor PWM output when disarmed
     // @Values: 0:PWM enabled while disarmed, 1:PWM disabled while disarmed
     // @User: Advanced
-    AP_GROUPINFO("SAFE_DISARM", 23, AP_MotorsMulticopter, _disarm_disable_pwm, 0),
+    AP_GROUPINFO("SAFE_DISARM", 23, AP_MotorsMulticopter, _disarm_disable_pwm, 1),
 
     // @Param: YAW_SV_ANGLE
     // @DisplayName: Yaw Servo Max Lean Angle
@@ -437,7 +437,7 @@ int16_t AP_MotorsMulticopter::output_to_pwm(float actuator)
         if (_disarm_disable_pwm && !armed()) {
             pwm_output = 0;
         } else {
-            pwm_output = get_pwm_output_min();
+            pwm_output = get_pwm_output_min() + 544.0f; // add 544.0f
         }
     } else {
         // in all other spool modes, covert to desired PWM
@@ -613,7 +613,7 @@ void AP_MotorsMulticopter::output_logic()
             // constrain ramp value and update mode
             if (_spin_up_ratio >= 1.0f) {
                 _spin_up_ratio = 1.0f;
-                _spool_state = SpoolState::SPOOLING_UP;
+                _spool_state = SpoolState::THROTTLE_UNLIMITED;
             }
             break;
 
@@ -679,7 +679,7 @@ void AP_MotorsMulticopter::output_logic()
 
         // make sure the motors are spooling in the correct direction
         if (_spool_desired != DesiredSpoolState::THROTTLE_UNLIMITED) {
-            _spool_state = SpoolState::SPOOLING_DOWN;
+            _spool_state = SpoolState::SHUT_DOWN;
             break;
         }
 

@@ -465,6 +465,9 @@ public:
     // find first channel that a function is assigned to
     static bool find_channel(SRV_Channel::Aux_servo_function_t function, uint8_t &chan);
 
+    // return channel that a function is assigned to
+    static SRV_Channel *return_channel(SRV_Channel::Aux_servo_function_t function);
+
     // find first channel that a function is assigned to, returning SRV_Channel object
     static SRV_Channel *get_channel_for(SRV_Channel::Aux_servo_function_t function, int8_t default_chan=-1);
 

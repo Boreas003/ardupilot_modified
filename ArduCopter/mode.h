@@ -38,6 +38,9 @@ public:
         AUTOROTATE =   26,  // Autonomous autorotation
         AUTO_RTL =     27,  // Auto RTL, this is not a true mode, AUTO will report as this mode if entered to perform a DO_LAND_START Landing sequence
         TURTLE =       28,  // Flip over after crash
+		GROUND = 	   29,  // UUV ground mode
+		STANDBY = 	   30,  // UUV standby
+		TEST = 		   31,  // UUV control surface / servos test
     };
 
     // constructor
@@ -1782,3 +1785,82 @@ private:
 
 };
 #endif
+
+// UUV Mode GROUND - Now the same as Stabilize Mode - Ground Mode 12/29
+class ModeGround : public Mode {
+
+public:
+    // inherit constructor
+    using Mode::Mode;
+    Number mode_number() const override { return Number::GROUND; }
+
+    virtual void run() override;
+
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return true; }
+    bool allows_arming(AP_Arming::Method method) const override { return true; };
+    bool is_autopilot() const override { return false; }
+    bool allows_save_trim() const override { return true; }
+    bool allows_autotune() const override { return true; }
+    bool allows_flip() const override { return true; }
+
+protected:
+
+    const char *name() const override { return "GROUND"; }
+    const char *name4() const override { return "GRND"; }
+
+private:
+
+};
+
+// UUV Mode STANDBY - Need to Modify
+class ModeStandby : public Mode {
+
+public:
+    // inherit constructor
+    using Mode::Mode;
+    Number mode_number() const override { return Number::STANDBY; }
+
+    virtual void run() override;
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return false; }
+    bool allows_arming(AP_Arming::Method method) const override { return true; };
+    bool is_autopilot() const override { return false; }
+    bool allows_save_trim() const override { return false; }
+    bool allows_autotune() const override { return false; }
+    bool allows_flip() const override { return false; }
+
+protected:
+
+    const char *name() const override { return "STANDBY"; }
+    const char *name4() const override { return "SDBY"; }
+
+private:
+
+};
+// UUV Mode TEST - Need to Modify
+class ModeTest : public Mode {
+
+public:
+    // inherit constructor
+    using Mode::Mode;
+    Number mode_number() const override { return Number::TEST; }
+
+    virtual void run() override;
+
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return true; }
+    bool allows_arming(AP_Arming::Method method) const override { return true; };
+    bool is_autopilot() const override { return false; }
+    bool allows_save_trim() const override { return false; }
+    bool allows_autotune() const override { return false; }
+    bool allows_flip() const override { return false; }
+
+protected:
+
+    const char *name() const override { return "TEST"; }
+    const char *name4() const override { return "TEST"; }
+
+private:
+
+};
