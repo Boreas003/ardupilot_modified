@@ -291,11 +291,11 @@ void AP_MotorsMatrix::output_to_motors()
         		if (fmode == 29) { // in ground mode
 					// constrain output value
 					int16_t pwmoutputf = output_to_pwm(_actuator[0]); // standard motor output
-					if (pwmoutputf > 1635) {
-						pwmoutputf = 1635;
+					if (pwmoutputf > 1645) {
+						pwmoutputf = 1645;
 					}
-					else if (pwmoutputf < 1446 && pwmoutputf > 1) {
-						pwmoutputf = 1446;
+					else if (pwmoutputf < 1445 && pwmoutputf > 1) {
+						pwmoutputf = 1445;
 					}
 					else if (pwmoutputf == 0) {
 						pwmoutputf = 0;
@@ -331,11 +331,11 @@ void AP_MotorsMatrix::output_to_motors()
 				if (fmode == 29) { // in ground mode
 					// constrain output value
 					int16_t pwmoutputf = output_to_pwm(_actuator[0]); // standard motor output
-					if (pwmoutputf >= 1635) {
-						pwmoutputf = 1635;
+					if (pwmoutputf >= 1645) {
+						pwmoutputf = 1645;
 					}
-					else if (pwmoutputf < 1446 && pwmoutputf > 1) {
-						pwmoutputf = 1446;
+					else if (pwmoutputf < 1445 && pwmoutputf > 1) {
+						pwmoutputf = 1445;
 					}
 					else if (pwmoutputf == 0) {
 						pwmoutputf = 0;
@@ -346,15 +346,14 @@ void AP_MotorsMatrix::output_to_motors()
 
 					// forward or backward
 					float pwmcal;
-					if (pwmoutputf >= 1544) {
-						pwmcal = sqrtf(4.0f*(-10.1320f)*(pwmoutputf-1642.4598f))+1442.1485f;
+					if (pwmoutputf >= 1590) {
+						pwmcal = 1409.5f+4.4710f*sqrtf(8333.4458f-5.0239f*pwmoutputf);
 					}
-					else if (pwmoutputf < 1544 && pwmoutputf > 5) {
-						pwmcal = (pwmoutputf-1433.9356)*(pwmoutputf-1433.9356)/(4*(-17.0336))+1637.2185;
-						//(pwmoutputf-1312.1972)*(pwmoutputf-1312.1972)/(4*(-75.9296))+1689.6755;
+					else if (pwmoutputf < 1510 && pwmoutputf > 5) {
+						pwmcal = 0.00574825f*pwmoutputf*pwmoutputf-17.7794f*pwmoutputf+15328.4f;
 					}
 					else {
-						pwmcal = 0;
+						pwmcal = pwmoutputf;
 					}
 					pwmoutput = (int)pwmcal;
 				}
@@ -384,11 +383,11 @@ void AP_MotorsMatrix::output_to_motors()
         		if (fmode == 29) { // in ground mode
         			// constrain output value
         			int16_t pwmoutputf = output_to_pwm(_actuator[3]); // standard motor output
-        			if (pwmoutputf >= 1635) {
-        				pwmoutputf = 1635;
+        			if (pwmoutputf >= 1645) {
+        				pwmoutputf = 1645;
         			}
-        			else if (pwmoutputf < 1446 && pwmoutputf > 1) {
-        				pwmoutputf = 1446;
+        			else if (pwmoutputf < 1445 && pwmoutputf > 1) {
+        				pwmoutputf = 1445;
         			}
         			else if (pwmoutputf == 0) {
         				pwmoutputf = 0;
@@ -399,15 +398,14 @@ void AP_MotorsMatrix::output_to_motors()
 
         			// forward or backward
         			float pwmcal;
-        			if (pwmoutputf >= 1544) {
-        				pwmcal = sqrtf(4.0f*(-10.1320f)*(pwmoutputf-1642.4598f))+1442.1485f;
-        				//sqrtf(4.0f*(-10.1763f)*(pwmoutputf-1648.4075f))+1440.2921f;
+        			if (pwmoutputf >= 1590) {
+        				pwmcal = 1358.8f+8.3634f*sqrtf(4556.8040f-2.7051f*pwmoutputf);
         			}
-        			else if (pwmoutputf < 1544 && pwmoutputf > 5) {
-        				pwmcal = (pwmoutputf-1433.9356)*(pwmoutputf-1433.9356)/(4*(-17.0336))+1637.2185;
+        			else if (pwmoutputf < 1510 && pwmoutputf > 5) {
+        				pwmcal = -0.00639497*pwmoutputf*pwmoutputf+17.8422*pwmoutputf-10791.0f;
         			}
         			else {
-        				pwmcal = 0;
+        				pwmcal = pwmoutputf;
         			}
         			pwmoutput = (int)pwmcal;
         		}
@@ -436,18 +434,18 @@ void AP_MotorsMatrix::output_to_motors()
 
 				if (fmode == 29) { // in ground mode
 					// constrain output value
-					int16_t pwmoutputf = output_to_pwm(_actuator[0]); // standard motor output
-					if (pwmoutputf >= 1635) {
-						pwmoutputf = 1635;
+					int16_t pwmoutputf = output_to_pwm(_actuator[3]); // standard motor output
+					if (pwmoutputf >= 1645) {
+						pwmoutputf = 1645;
 					}
-					else if (pwmoutputf < 1446 && pwmoutputf > 1) {
-						pwmoutputf = 1446;
+					else if (pwmoutputf < 1445 && pwmoutputf > 1) {
+						pwmoutputf = 1445;
 					}
 					else if (pwmoutputf == 0) {
 						pwmoutputf = 0;
 					}
 					else {
-						pwmoutputf = output_to_pwm(_actuator[0]);
+						pwmoutputf = output_to_pwm(_actuator[3]);
 					}
 					pwmoutput = pwmoutputf;
 				}
@@ -1173,8 +1171,8 @@ void AP_MotorsMatrix::setup_motors(motor_frame_class frame_class, motor_frame_ty
 			switch (frame_type) {
 				case MOTOR_FRAME_TYPE_PLUS:{
 					_frame_type_string = "PLUS";
-					add_motor_raw(0, 0.0f, 0.0f, -1.0f, 0, 1.0f); // esc1 - motor 1 - LF
-					add_motor_raw(3, 0.0f, 0.0f, 1.0f, 3, 1.0f); // esc4 - motor 4 - RF
+					add_motor_raw(0, 0.0f, 0.0f, -1.0f, 0, 1.0f); // esc1 - motor 1 - RF
+					add_motor_raw(3, 0.0f, 0.0f, 1.0f, 3, 1.0f); // esc4 - motor 4 - LF
 					add_motor_raw(1, 0.0f, 0.0f, -1.0f, 1, 1.0f); // esc3 - motor 2 - RB
 					add_motor_raw(2, 0.0f, 0.0f, 1.0f, 2, 1.0f); // esc6 - motor 3 - LB
 					// add_motor_raw: (motor_num, roll_fac, pitch_fac, yaw_fac, testing_order, throttle_fac)
