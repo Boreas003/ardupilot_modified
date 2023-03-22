@@ -210,7 +210,7 @@ void AP_MotorsMatrix::output_to_motors()
 				for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
 					if (motor_enabled[i]) {
 						if (i == 0 || i == 1 || i == 2 || i == 3){
-							_actuator[i] = 0.5f;
+							_actuator[i] = 0.54f;
 						}
 						else {
 							_actuator[i] = 0.0f;
@@ -223,7 +223,7 @@ void AP_MotorsMatrix::output_to_motors()
 				for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
 					if (motor_enabled[i]) {
 						if (i == 0 || i == 1 || i == 2 || i == 3){
-							set_actuator_with_slew(_actuator[i], 0.5f);
+							set_actuator_with_slew(_actuator[i], 0.54f);
 						}
 						else {
 							set_actuator_with_slew(_actuator[i], 0.0f);//actuator_spin_up_to_ground_idle());
@@ -252,11 +252,17 @@ void AP_MotorsMatrix::output_to_motors()
 
     }
 
-    RC_Channel *csotrim = rc().channel(int8_t(11)); // channel 12 from 982 t0 2006
+    // thrust vector
+    RC_Channel *csotrim = rc().channel(int8_t(11)); // channel 12 from 982 to 2006
     float sotrim;
     int16_t sotrimadd;
     sotrim = (csotrim->get_radio_in() - 1494.0)/512.0*100.0;
     sotrimadd = (int)sotrim;
+
+    // backward mode
+    RC_Channel *cback = rc().channel(int8_t(12)); // channel 13 from 988 to 2012
+    int16_t back;
+    back = cback->get_radio_in();
 
     // convert output to PWM and send to each motor
     for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
@@ -264,25 +270,49 @@ void AP_MotorsMatrix::output_to_motors()
         	// motor 5
         	if (i == 4){
         		int16_t value;
-        		value = SRV_Channels::return_channel(SRV_Channel::k_motor5)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+        		if (back > 1500){
+        			int16_t value1 = SRV_Channels::return_channel(SRV_Channel::k_motor5)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+        			value = 1610 - value1 + 1610;
+        		}
+        		else {
+        			value = SRV_Channels::return_channel(SRV_Channel::k_motor5)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+        		}
         		rc_write(i, value);
         	}
         	// motor 6
         	else if (i == 5){
 				int16_t value;
-				value = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+				if (back > 1500) {
+					int16_t value1 = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+					value = 1410 - value1 + 1410;
+				}
+				else {
+					value = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+				}
 				rc_write(i, value);
         	}
         	// motor 7
         	else if (i == 6){
 				int16_t value;
-				value = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+				if (back > 1500) {
+					int16_t value1 = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+					value = 1580 - value1 + 1580;
+				}
+				else {
+					value = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+				}
 				rc_write(i, value);
 			}
         	// motor 8
         	else if (i == 7){
 				int16_t value;
-				value = SRV_Channels::return_channel(SRV_Channel::k_motor8)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+				if (back > 1500) {
+					int16_t value1 = SRV_Channels::return_channel(SRV_Channel::k_motor8)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+					value = 1580 - value1 + 1580;
+				}
+				else {
+					value = SRV_Channels::return_channel(SRV_Channel::k_motor8)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+				}
 				rc_write(i, value);
 			}
         	else if (i == 0) { // motor 1
