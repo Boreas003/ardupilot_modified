@@ -42,100 +42,253 @@ void SRV_Channel::output_ch(void)
     case k_rcin1 ... k_rcin16: // rc pass-thru
         passthrough_from = int8_t((int16_t)function - k_rcin1);
         break;
-    case k_scripting1: // rob servo 9
+    case k_scripting1: // Thruster on the left
     	passthrough_from = 16;
     	break;
-    case k_scripting2: // rob servo 11
+    case k_scripting2: // Thruster on the right
         	passthrough_from = 17;
         	break;
-    case k_scripting3: // rob servo 13
+    case k_scripting3: // empty
         	passthrough_from = 18;
         	break;
-    case k_scripting4: // rob servo 15
+    case k_scripting4: // empty
         	passthrough_from = 19;
         	break;
     }
-    // roll or pitch channel mid place 1495
-    if (passthrough_from == 17){
+
+    // control mode switch
+    // proportional of throttle
+    // difference pwm output control
+
+    // ch6 thruster control mode
+    // ch9 thruster direct control
+    // ch14 difference control
+
+
+    if (passthrough_from == 16){ // Thruster on the left
+
+		RC_Channel *c1 = rc().channel(int8_t(5)); // mode switch 1495(up)-1750-2006
+		RC_Channel *c2 = rc().channel(int8_t(8)); // 1366(right)-1622-mid1494
+		RC_Channel *c3 = rc().channel(int8_t(13)); // 982-2006(right)
+		RC_Channel *c4 = rc().channel(int8_t(2)); // 982-2006
+		RC_Channel *c5 = rc().channel(int8_t(12)); // justify whether backward
+
+		int16_t thrustermod; // mode
+        int16_t thrusterctl; // control
+        int16_t thrusterpdr; // pwm difference ratio
+        int16_t throttle_value; // ch3 throttle
+        int16_t back;
+        float thrusteroutput;
+
+		thrustermod = c1->get_radio_in();
+		thrusterctl = c2->get_radio_in();
+		thrusterpdr = c3->get_radio_in();
+		throttle_value = c4->get_radio_in();
+		back = c5->get_radio_in();
+
+		if (c1 && c2 && c3 && c4 && c5) {
+			if (SRV_Channels::passthrough_disabled()) {
+				output_pwm = 1494;
+			}
+			else {
+				if (thrustermod > 1800) { // switch down - default proportional 5% to 25%
+					float throttle_pct = (1494.0f-thrusterctl)/128.0f*0.1f + 0.15f;
+					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					if (back > 1500) { // backward
+						thrusteroutput = (throttle_pct * (throttle_value-1549.0f)) - thruster_pdr + 1494.0f;
+					}
+					else { // forward
+						thrusteroutput = -1.0f*(throttle_pct * (throttle_value-1549.0f)) + thruster_pdr + 1494.0f;
+					}
+
+					if (thrusteroutput < 1366) {
+						output_pwm = 1366;
+					}
+					else if (thrusteroutput > 1622) {
+						output_pwm = 1622;
+					}
+					else {
+						output_pwm = (int)thrusteroutput;
+					}
+				}
+				else if (thrustermod < 1700) {// switch up - individual control
+					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					if (thrusterctl < 1494) { // forward
+						thrusteroutput = thrusterctl +thruster_pdr;
+					}
+					else {
+						thrusteroutput = thrusterctl - thruster_pdr;
+					}
+					if (thrusteroutput < 1366) {
+						output_pwm = 1366;
+					}
+					else if (thrusteroutput > 1622) {
+						output_pwm = 1622;
+					}
+					else {
+						output_pwm = (int)thrusteroutput;
+					}
+				}
+				else {
+					output_pwm = 1494;
+				}
+			}
+		}
+		/*
     	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
-    	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
-    	if (c1 && c2){
-    		if (SRV_Channels::passthrough_disabled()){
-    			output_pwm = (c1->get_radio_trim() + c2->get_radio_trim() - 1495);
-    		} else {
-    			const int16_t radio_in = (c1->get_radio_in() + c2->get_radio_in() - 1495);
-    			if (!ign_small_rcin_changes) {
-    				output_pwm = radio_in;
-    				previous_radio_in = radio_in;
-    			} else {
-    				if (abs(radio_in - previous_radio_in) > (c1->get_dead_zone()+c2->get_dead_zone() - 1495)){
-    					output_pwm = radio_in;
-    					ign_small_rcin_changes = false;
-    				}
-    			}
-    		}
-    	}
-    }
-    if (passthrough_from == 16){
-        	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
-        	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
-        	if (c1 && c2){
-        		if (SRV_Channels::passthrough_disabled()){
-        			output_pwm = (1495 - c1->get_radio_trim() + c2->get_radio_trim());
-        		} else {
-        			const int16_t radio_in = (1495 - c1->get_radio_in() + c2->get_radio_in());
-        			if (!ign_small_rcin_changes) {
-        				output_pwm = radio_in;
-        				previous_radio_in = radio_in;
-        			} else {
-        				if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone()+c2->get_dead_zone())){
-        					output_pwm = radio_in;
-        					ign_small_rcin_changes = false;
-        				}
-        			}
-        		}
-        	}
-        }
+		RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+		if (c1 && c2){
+			if (SRV_Channels::passthrough_disabled()){
+				output_pwm = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+			} else {
+				const int16_t radio_in = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+				if (!ign_small_rcin_changes) {
+					output_pwm = radio_in;
+					previous_radio_in = radio_in;
+				} else {
+					if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone() - c2->get_dead_zone() + 1495 + 1495)){
+						output_pwm = radio_in;
+						ign_small_rcin_changes = false;
+					}
+				}
+			}
+		}*/
+	}
+
+
+    if (passthrough_from == 17){ // Thruster on the right
+
+    	int16_t thrustermod; // mode
+		int16_t thrusterctl; // control
+		int16_t thrusterpdr; // pwm difference ratio
+		int16_t throttle_value; // ch3 throttle
+		int16_t back;
+		float thrusteroutput;
+
+		RC_Channel *c1 = rc().channel(int8_t(5)); // mode switch 1495(up)-1750-2006
+		RC_Channel *c2 = rc().channel(int8_t(8)); // 1366(right)-1622
+		RC_Channel *c3 = rc().channel(int8_t(13)); // 982-2006(right)
+		RC_Channel *c4 = rc().channel(int8_t(2)); // 982-2006
+		RC_Channel *c5 = rc().channel(int8_t(12)); // justify whether backward
+
+		thrustermod = c1->get_radio_in();
+		thrusterctl = c2->get_radio_in();
+		thrusterpdr = c3->get_radio_in();
+		throttle_value = c4->get_radio_in();
+		back = c5->get_radio_in();
+
+		if (c1 && c2 && c3 && c4 && c5) {
+			if (SRV_Channels::passthrough_disabled()) {
+				output_pwm = 1494;
+			}
+			else {
+				if (thrustermod > 1800) { // switch down - default proportional 5% to 25%
+					float throttle_pct = (1494.0f-thrusterctl)/128.0f*0.1f + 0.15f;
+					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					if (back > 1500) { // backward
+						thrusteroutput = (throttle_pct * (throttle_value-1549.0f)) + thruster_pdr + 1494.0f;
+					}
+					else { // forward
+						thrusteroutput = -1.0f*(throttle_pct * (throttle_value-1549.0f)) - thruster_pdr + 1494.0f;
+					}
+
+					if (thrusteroutput < 1366) {
+						output_pwm = 1366;
+					}
+					else if (thrusteroutput > 1622) {
+						output_pwm = 1622;
+					}
+					else {
+						output_pwm = (int)thrusteroutput;
+					}
+				}
+				else if (thrustermod < 1700) {// switch up - individual control
+					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					if (thrusterctl < 1494) { // forward
+						thrusteroutput = thrusterctl - thruster_pdr;
+					}
+					else { // backward
+						thrusteroutput = thrusterctl + thruster_pdr;
+					}
+					if (thrusteroutput < 1366) {
+						output_pwm = 1366;
+					}
+					else if (thrusteroutput > 1622) {
+						output_pwm = 1622;
+					}
+					else {
+						output_pwm = (int)thrusteroutput;
+					}
+				}
+				else {
+					output_pwm = 1494;
+				}
+			}
+		}
+		/*
+    	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+		RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+		if (c1 && c2){
+			if (SRV_Channels::passthrough_disabled()){
+				output_pwm = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+			} else {
+				const int16_t radio_in = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+				if (!ign_small_rcin_changes) {
+					output_pwm = radio_in;
+					previous_radio_in = radio_in;
+				} else {
+					if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone() - c2->get_dead_zone() + 1495 + 1495)){
+						output_pwm = radio_in;
+						ign_small_rcin_changes = false;
+					}
+				}
+			}
+		}*/
+	}
+
+
+    // roll or pitch channel mid place 1495
+
     if (passthrough_from == 18){
-            	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
-            	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
-            	if (c1 && c2){
-            		if (SRV_Channels::passthrough_disabled()){
-            			output_pwm = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
-            		} else {
-            			const int16_t radio_in = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
-            			if (!ign_small_rcin_changes) {
-            				output_pwm = radio_in;
-            				previous_radio_in = radio_in;
-            			} else {
-            				if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone() - c2->get_dead_zone() + 1495 + 1495)){
-            					output_pwm = radio_in;
-            					ign_small_rcin_changes = false;
-            				}
-            			}
-            		}
-            	}
-            }
+		RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+		RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+		if (c1 && c2){
+			if (SRV_Channels::passthrough_disabled()){
+				output_pwm = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+			} else {
+				const int16_t radio_in = (1495 - c1->get_radio_trim() - c2->get_radio_trim() + 1495 + 1495);
+				if (!ign_small_rcin_changes) {
+					output_pwm = radio_in;
+					previous_radio_in = radio_in;
+				} else {
+					if (abs(radio_in - previous_radio_in) > (1495 - c1->get_dead_zone() - c2->get_dead_zone() + 1495 + 1495)){
+						output_pwm = radio_in;
+						ign_small_rcin_changes = false;
+					}
+				}
+			}
+		}
+	}
     if (passthrough_from == 19){
-        	RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
-        	RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
-        	if (c1 && c2){
-        		if (SRV_Channels::passthrough_disabled()){
-        			output_pwm = (c1->get_radio_trim() - c2->get_radio_trim() + 1495);
-        		} else {
-        			const int16_t radio_in = (c1->get_radio_in() - c2->get_radio_in() + 1495);
-        			if (!ign_small_rcin_changes) {
-        				output_pwm = radio_in;
-        				previous_radio_in = radio_in;
-        			} else {
-        				if (abs(radio_in - previous_radio_in) > (c1->get_dead_zone()-c2->get_dead_zone() + 1495)){
-        					output_pwm = radio_in;
-        					ign_small_rcin_changes = false;
-        				}
-        			}
-        		}
-        	}
-        }
+		RC_Channel *c1 = rc().channel(int8_t(0)); // channel roll
+		RC_Channel *c2 = rc().channel(int8_t(1)); // channel pitch
+		if (c1 && c2){
+			if (SRV_Channels::passthrough_disabled()){
+				output_pwm = (c1->get_radio_trim() - c2->get_radio_trim() + 1495);
+			} else {
+				const int16_t radio_in = (c1->get_radio_in() - c2->get_radio_in() + 1495);
+				if (!ign_small_rcin_changes) {
+					output_pwm = radio_in;
+					previous_radio_in = radio_in;
+				} else {
+					if (abs(radio_in - previous_radio_in) > (c1->get_dead_zone()-c2->get_dead_zone() + 1495)){
+						output_pwm = radio_in;
+						ign_small_rcin_changes = false;
+					}
+				}
+			}
+		}
+	}
 
 
 

@@ -66,7 +66,7 @@ private:
     AP_Int32 cur_max;
 
     // Retraction servo state
-    uint8_t op_mode[16];
+    uint8_t op_mode[20];
 
     uint32_t last_send_us;
     uint32_t delay_time_us;

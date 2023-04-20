@@ -310,9 +310,17 @@ void AP_RobotisServo::configure_servos(void)
     // initialize modes
     // send_command(BROADCAST_ID, REG_OPERATING_MODE, OPMODE_POS_CONTROL, 1);
     for(uint8_t i = 0; i < NUM_SERVO_CHANNELS; i++) {
-    	if (i+1 == 10 || i+1 == 12 || i+1 == 14 || i+1 == 16) {
-    		send_command(i+1, REG_OPERATING_MODE, OPMODE_CURR_CONTROL, 1);
-    		op_mode[i] = OPMODE_CURR_CONTROL;
+    	if (i+1 == 10) {
+    		/*send_command(i+1, REG_OPERATING_MODE, OPMODE_CURR_CONTROL, 1);
+    		op_mode[i] = OPMODE_CURR_CONTROL;*/
+    		send_command(10, REG_OPERATING_MODE, OPMODE_CURR_CONTROL, 1);
+			op_mode[9] = OPMODE_CURR_CONTROL;
+			send_command(17, REG_OPERATING_MODE, OPMODE_CURR_CONTROL, 1);
+			op_mode[16] = OPMODE_CURR_CONTROL;
+			send_command(18, REG_OPERATING_MODE, OPMODE_CURR_CONTROL, 1);
+			op_mode[17] = OPMODE_CURR_CONTROL;
+			send_command(19, REG_OPERATING_MODE, OPMODE_CURR_CONTROL, 1);
+			op_mode[18] = OPMODE_CURR_CONTROL;
     	}
     	else {
     		send_command(i+1, REG_OPERATING_MODE, OPMODE_POS_CONTROL, 1);
@@ -413,7 +421,7 @@ void AP_RobotisServo::read_bytes(void)
 void AP_RobotisServo::process_packet(const uint8_t *pkt, uint8_t length)
 {
     uint8_t id = pkt[PKT_ID];
-    if (id > 16 || id < 1) {
+    if (id > 20 || id < 1) {
         // discard packets from servos beyond max or min. Note that we
         // don't allow servo 0, to make mapping to SERVOn_* parameters
         // easier
@@ -483,12 +491,25 @@ void AP_RobotisServo::update()
         float v = float(pwm - min) / (max - min);
         int32_t value = 0;
 
-        if (i+1 == 10 || i+1 == 12 || i+1 == 14 || i+1 == 16) { 									// Check that servo is a retraction servo
-        	if (pwm < 1400 || pwm > 1600) {            												// Check that pwm is out of deadzone
+        if (i+1 == 10 ) { // Check that servo channel 10 - the retraction system control channel
+        	//if (pwm < 1400 || pwm > 1600) { // Check that pwm is out of deadzone
+			// servo 10
+			if (op_mode[9] != OPMODE_CURR_CONTROL) { reconfig_servo(10, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
+			if ( pwm < 1400 ) {send_command(10, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(10, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(10, REG_GOAL_CURRENT, 0, 2);}
+			// servo 17 - original 12
+			if (op_mode[16] != OPMODE_CURR_CONTROL) { reconfig_servo(17, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
+			if ( pwm < 1400 ) {send_command(17, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(17, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(17, REG_GOAL_CURRENT, 0, 2);}
+			// servo 18 - original 14
+			if (op_mode[17] != OPMODE_CURR_CONTROL) { reconfig_servo(18, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
+			if ( pwm < 1400 ) {send_command(18, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(18, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(18, REG_GOAL_CURRENT, 0, 2);}
+			// servo 19 - original 16
+			if (op_mode[18] != OPMODE_CURR_CONTROL) { reconfig_servo(19, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
+			if ( pwm < 1400 ) {send_command(19, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(19, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(19, REG_GOAL_CURRENT, 0, 2);}
+        		/*
 				if (op_mode[i] != OPMODE_CURR_CONTROL) { reconfig_servo(i+1, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
-				if ( pwm < 1500 ) {send_command(i+1, REG_GOAL_CURRENT, -cur_max, 2);} else { send_command(i+1, REG_GOAL_CURRENT, cur_max, 2); }
-        	}
-        	else if(op_mode[i] != OPMODE_POS_CONTROL) { reconfig_servo(i+1, OPMODE_POS_CONTROL); } // Check that servo is in pos mode, if not, reconfigure. Position will be held automatically
+				if ( pwm < 1500 ) {send_command(i+1, REG_GOAL_CURRENT, -cur_max, 2);} else { send_command(i+1, REG_GOAL_CURRENT, cur_max, 2); }*/
+        	//}
+        	//else if(op_mode[i] != OPMODE_POS_CONTROL) { reconfig_servo(i+1, OPMODE_POS_CONTROL); } // Check that servo is in pos mode, if not, reconfigure. Position will be held automatically
         }
         else {
             value = pos_min + v * (pos_max - pos_min);

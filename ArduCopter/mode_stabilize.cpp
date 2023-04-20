@@ -1,4 +1,5 @@
 #include "Copter.h"
+#include <RC_Channel/RC_Channel.h>
 
 /*
  * Init and run calls for stabilize flight mode
@@ -55,7 +56,17 @@ void ModeStabilize::run()
     }
 
     // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(target_roll, target_pitch, target_yaw_rate);
+
+    // backward mode
+	RC_Channel *cback = rc().channel(int8_t(12)); // channel 13 from 988 to 2012
+	int16_t back;
+	back = cback->get_radio_in();
+	if (back > 1500){
+		attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(-1*target_roll, -1*target_pitch, target_yaw_rate);
+	}
+	else {
+		attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(target_roll, target_pitch, target_yaw_rate);
+	}
 
     // output pilot's throttle
     attitude_control->set_throttle_out(get_pilot_desired_throttle(),
