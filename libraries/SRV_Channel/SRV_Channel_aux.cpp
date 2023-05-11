@@ -72,18 +72,21 @@ void SRV_Channel::output_ch(void)
 		RC_Channel *c3 = rc().channel(int8_t(13)); // 982-2006(right)
 		RC_Channel *c4 = rc().channel(int8_t(2)); // 982-2006
 		RC_Channel *c5 = rc().channel(int8_t(12)); // justify whether backward
+		RC_Channel *c6 = rc().channel(int8_t(3)); // ch4 yaw input
 
 		int16_t thrustermod; // mode
         int16_t thrusterctl; // control
         int16_t thrusterpdr; // pwm difference ratio
         int16_t throttle_value; // ch3 throttle
         int16_t back;
+        int16_t yaw_control;  // ch4 yaw input
         float thrusteroutput;
 
 		thrustermod = c1->get_radio_in();
 		thrusterctl = c2->get_radio_in();
 		thrusterpdr = c3->get_radio_in();
 		throttle_value = c4->get_radio_in();
+		yaw_control = c6->get_radio_in();
 		back = c5->get_radio_in();
 
 		if (c1 && c2 && c3 && c4 && c5) {
@@ -91,14 +94,15 @@ void SRV_Channel::output_ch(void)
 				output_pwm = 1494;
 			}
 			else {
-				if (thrustermod > 1800) { // switch down - default proportional 5% to 25%
-					float throttle_pct = (1494.0f-thrusterctl)/128.0f*0.1f + 0.15f;
+				if (thrustermod > 1800) { // switch down - default proportional 30% to 60%
+					float throttle_pct = (1494.0f-thrusterctl)/128.0f*0.15f + 0.45f;
 					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					float yaw_com = -1.0f*(yaw_control-1500.0f)/512.0f*50.0f; // yaw control max generate 100 pwm difference
 					if (back > 1500) { // backward
-						thrusteroutput = (throttle_pct * (throttle_value-1549.0f)) - thruster_pdr + 1494.0f;
+						thrusteroutput = (throttle_pct * (throttle_value-1500.0f)) - thruster_pdr + 1494.0f - yaw_com;
 					}
 					else { // forward
-						thrusteroutput = -1.0f*(throttle_pct * (throttle_value-1549.0f)) + thruster_pdr + 1494.0f;
+						thrusteroutput = -1.0f*(throttle_pct * (throttle_value-1500.0f)) + thruster_pdr + 1494.0f + yaw_com;
 					}
 
 					if (thrusteroutput < 1366) {
@@ -112,7 +116,7 @@ void SRV_Channel::output_ch(void)
 					}
 				}
 				else if (thrustermod < 1700) {// switch up - individual control
-					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*50.0f;
 					if (thrusterctl < 1494) { // forward
 						thrusteroutput = thrusterctl +thruster_pdr;
 					}
@@ -163,6 +167,7 @@ void SRV_Channel::output_ch(void)
 		int16_t thrusterpdr; // pwm difference ratio
 		int16_t throttle_value; // ch3 throttle
 		int16_t back;
+		int16_t yaw_control;  // ch4 yaw input
 		float thrusteroutput;
 
 		RC_Channel *c1 = rc().channel(int8_t(5)); // mode switch 1495(up)-1750-2006
@@ -170,11 +175,13 @@ void SRV_Channel::output_ch(void)
 		RC_Channel *c3 = rc().channel(int8_t(13)); // 982-2006(right)
 		RC_Channel *c4 = rc().channel(int8_t(2)); // 982-2006
 		RC_Channel *c5 = rc().channel(int8_t(12)); // justify whether backward
+		RC_Channel *c6 = rc().channel(int8_t(3)); // ch4 yaw input
 
 		thrustermod = c1->get_radio_in();
 		thrusterctl = c2->get_radio_in();
 		thrusterpdr = c3->get_radio_in();
 		throttle_value = c4->get_radio_in();
+		yaw_control = c6->get_radio_in();
 		back = c5->get_radio_in();
 
 		if (c1 && c2 && c3 && c4 && c5) {
@@ -182,14 +189,15 @@ void SRV_Channel::output_ch(void)
 				output_pwm = 1494;
 			}
 			else {
-				if (thrustermod > 1800) { // switch down - default proportional 5% to 25%
-					float throttle_pct = (1494.0f-thrusterctl)/128.0f*0.1f + 0.15f;
+				if (thrustermod > 1800) { // switch down - default proportional 30% to 60%
+					float throttle_pct = (1494.0f-thrusterctl)/128.0f*0.15f + 0.45f;
 					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					float yaw_com = (yaw_control-1500.0f)/512.0f*50.0f; // yaw control max generate 100 pwm difference
 					if (back > 1500) { // backward
-						thrusteroutput = (throttle_pct * (throttle_value-1549.0f)) + thruster_pdr + 1494.0f;
+						thrusteroutput = (throttle_pct * (throttle_value-1500.0f)) + thruster_pdr + 1494.0f - yaw_com;
 					}
 					else { // forward
-						thrusteroutput = -1.0f*(throttle_pct * (throttle_value-1549.0f)) - thruster_pdr + 1494.0f;
+						thrusteroutput = -1.0f*(throttle_pct * (throttle_value-1500.0f)) - thruster_pdr + 1494.0f + yaw_com;
 					}
 
 					if (thrusteroutput < 1366) {
@@ -203,7 +211,7 @@ void SRV_Channel::output_ch(void)
 					}
 				}
 				else if (thrustermod < 1700) {// switch up - individual control
-					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*20.0f;
+					float thruster_pdr = (-thrusterpdr+1494.0f)/512.0f*50.0f;
 					if (thrusterctl < 1494) { // forward
 						thrusteroutput = thrusterctl - thruster_pdr;
 					}
