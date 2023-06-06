@@ -307,13 +307,43 @@ void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv(float e
 	float euler_pitch_angle = radians(euler_pitch_angle_cd * 0.01f);
 	float euler_yaw_rate = radians(euler_yaw_rate_cds * 0.01f);
 
-	//const AP_AHRS &ahrs = AP::ahrs();
-	//_euler_angle_target.x = ahrs.roll;
-	//_euler_angle_target.y = ahrs.pitch;
-	//_euler_angle_target.z = ahrs.yaw;
+	_euler_angle_target.x = euler_roll_angle;
+	_euler_angle_target.y = euler_pitch_angle;
+	_euler_angle_target.z += euler_yaw_rate * _dt;
 
 	Quaternion attitude_body;
-    _ahrs.get_quat_body_to_ned(attitude_body);
+	Vector3f euler_angle_target;
+	_ahrs.get_quat_body_to_ned(attitude_body);
+	attitude_body.to_euler(euler_angle_target.x, euler_angle_target.y, euler_angle_target.z);
+
+	const Vector3f euler_accel = {get_accel_roll_max_radss(), get_accel_pitch_max_radss(), get_accel_yaw_max_radss()};
+	 _euler_rate_target.x = input_shaping_angle(wrap_PI(euler_roll_angle - euler_angle_target.x), _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
+	 _euler_rate_target.y = input_shaping_angle(wrap_PI(euler_pitch_angle - euler_angle_target.y), _input_tc, euler_accel.y, _euler_rate_target.y, _dt);
+	 _euler_rate_target.z = input_shaping_ang_vel(_euler_rate_target.z, euler_yaw_rate, euler_accel.z, _dt);
+
+	 _ang_vel_body = _euler_rate_target;
+	 ang_vel_limit(_ang_vel_body, radians(_ang_vel_roll_max), radians(_ang_vel_pitch_max), radians(_ang_vel_yaw_max));
+	 _feedforward_scalar = 1.0f;
+
+	 Quaternion attitude_target_update;
+	 attitude_target_update.from_axis_angle(Vector3f{_euler_rate_target.x*_dt, _euler_rate_target.y*_dt, _euler_rate_target.z*_dt});
+	 _attitude_target = _attitude_target*attitude_target_update;
+	 _attitude_target.normalize();
+	 _attitude_ang_error = attitude_body.inverse()*_attitude_target;
+
+
+}
+
+void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv2(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds)
+{
+
+	// Convert from centidegrees on public interface to radians
+	float euler_roll_angle = radians(euler_roll_angle_cd * 0.01f);
+	float euler_pitch_angle = radians(euler_pitch_angle_cd * 0.01f);
+	float euler_yaw_rate = radians(euler_yaw_rate_cds * 0.01f);
+
+	Quaternion attitude_body;
+	_ahrs.get_quat_body_to_ned(attitude_body);
 	attitude_body.to_euler(_euler_angle_target.x, _euler_angle_target.y, _euler_angle_target.z);
 
 	const Vector3f euler_accel = {get_accel_roll_max_radss(), get_accel_pitch_max_radss(), get_accel_yaw_max_radss()};
@@ -750,20 +780,7 @@ void AC_AttitudeControl::attitude_controller_run_quat()
     // rotation from the target frame to the body frame
     Quaternion rotation_target_to_body = attitude_body.inverse() * _attitude_target;
 
-    // target angle velocity vector in the body frame
-    Vector3f ang_vel_target_rp = _ang_vel_target; // remove this
-    ang_vel_target_rp.z = 0.0f; // remove this
-    Vector3f ang_vel_body_feedforward_rp = rotation_target_to_body * ang_vel_target_rp; // changge this ang_vel_target_another to _ang_vel_target
-    Vector3f ang_vel_target_y = _ang_vel_target;
-    ang_vel_target_y.x = 0.0f;
-    ang_vel_target_y.y = 0.0f;
-    Vector3f ang_vel_body_feedforward_y = rotation_target_to_body * ang_vel_target_y;
-
-    Vector3f ang_vel_body_feedforward;
-    ang_vel_body_feedforward.x = ang_vel_body_feedforward_rp.x;
-    ang_vel_body_feedforward.y = ang_vel_body_feedforward_rp.y;
-    ang_vel_body_feedforward.z = ang_vel_body_feedforward_y.z;
-
+    Vector3f ang_vel_body_feedforward = rotation_target_to_body * _ang_vel_target;
 
     // Correct the thrust vector and smoothly add feedforward and yaw input
     _feedforward_scalar = 1.0f;
