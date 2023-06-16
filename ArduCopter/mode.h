@@ -93,6 +93,7 @@ public:
 
     // pilot input processing
     void get_pilot_desired_lean_angles(float &roll_out, float &pitch_out, float angle_max, float angle_limit) const;
+    void get_pilot_desired_lean_angles2(float &roll_out, float &pitch_out, float angle_max, float angle_limit) const;
     float get_pilot_desired_yaw_rate(float yaw_in);
     float get_pilot_desired_throttle() const;
 
@@ -272,6 +273,7 @@ public:
     float get_pilot_desired_climb_rate(float throttle_control);
     float get_non_takeoff_throttle(void);
     void update_simple_mode(void);
+    void update_simple_mode2(void);
     bool set_mode(Mode::Number mode, ModeReason reason);
     void set_land_complete(bool b);
     GCS_Copter &gcs();

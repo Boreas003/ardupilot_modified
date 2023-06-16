@@ -144,6 +144,16 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("INPUT_TC", 20, AC_AttitudeControl, _input_tc, AC_ATTITUDE_CONTROL_INPUT_TC_DEFAULT),
 
+	// @Param: INPUT_TC_P
+	// @DisplayName: Attitude control input time constant
+	// @Description: Attitude control input time constant.  Low numbers lead to sharper response, higher numbers to softer response
+	// @Units: s
+	// @Range: 0 1
+	// @Increment: 0.01
+	// @Values: 0.5:Very Soft, 0.2:Soft, 0.15:Medium, 0.1:Crisp, 0.05:Very Crisp
+	// @User: Standard
+	AP_GROUPINFO("INPUT_TC_P", 21, AC_AttitudeControl, _input_tc_pitch, AC_ATTITUDE_CONTROL_INPUT_TC_DEFAULT),
+
     AP_GROUPEND
 };
 
@@ -318,7 +328,7 @@ void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv(float e
 
 	const Vector3f euler_accel = {get_accel_roll_max_radss(), get_accel_pitch_max_radss(), get_accel_yaw_max_radss()};
 	 _euler_rate_target.x = input_shaping_angle(wrap_PI(euler_roll_angle - euler_angle_target.x), _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
-	 _euler_rate_target.y = input_shaping_angle(wrap_PI(euler_pitch_angle - euler_angle_target.y), _input_tc, euler_accel.y, _euler_rate_target.y, _dt);
+	 _euler_rate_target.y = input_shaping_angle(wrap_PI(euler_pitch_angle - euler_angle_target.y), _input_tc_pitch, euler_accel.y, _euler_rate_target.y, _dt);
 	 _euler_rate_target.z = input_shaping_ang_vel(_euler_rate_target.z, euler_yaw_rate, euler_accel.z, _dt);
 
 	 _ang_vel_body = _euler_rate_target;

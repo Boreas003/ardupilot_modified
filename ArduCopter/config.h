@@ -549,7 +549,7 @@
 // Stabilize Rate Control
 //
 #ifndef ROLL_PITCH_YAW_INPUT_MAX
- # define ROLL_PITCH_YAW_INPUT_MAX      4500        // roll, pitch and yaw input range
+ # define ROLL_PITCH_YAW_INPUT_MAX      6000        // roll, pitch and yaw input range
 #endif
 #ifndef DEFAULT_ANGLE_MAX
  # define DEFAULT_ANGLE_MAX         3000            // ANGLE_MAX parameters default value

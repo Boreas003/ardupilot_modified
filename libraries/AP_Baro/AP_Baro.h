@@ -82,6 +82,8 @@ public:
     // pressure in Pascal. Divide by 100 for millibars or hectopascals
     float get_pressure(void) const { return get_pressure(_primary); }
     float get_pressure(uint8_t instance) const { return sensors[instance].pressure; }
+    // the pressure reading now - main loop 400Hz but Baro update 10Hz
+	float _pressure_now;
 
     // temperature in degrees C
     float get_temperature(void) const { return get_temperature(_primary); }

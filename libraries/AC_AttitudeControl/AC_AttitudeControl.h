@@ -364,6 +364,9 @@ public:
     // enable inverted flight on backends that support it
     virtual void set_inverted_flight(bool inverted) {}
     
+    // get _ahrs
+    AP_AHRS_View get_ahrs() {return _ahrs;}
+
     // User settable parameters
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -412,6 +415,8 @@ protected:
 
     // rate controller input smoothing time constant
     AP_Float            _input_tc;
+    // rate controller input smoothing time constant for pitch
+    AP_Float			_input_tc_pitch;
 
     // Intersampling period in seconds
     float               _dt;

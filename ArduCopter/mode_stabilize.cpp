@@ -9,12 +9,41 @@
 // should be called at 100hz or more
 void ModeStabilize::run()
 {
-    // apply simple mode transform to pilot inputs
-    update_simple_mode();
+	// two different attitude controllers
+	RC_Channel *ctry = rc().channel(int8_t(6)); // channel 7
+	int16_t try_c;
+	try_c = ctry->get_radio_in();
 
-    // convert pilot input to lean angles
-    float target_roll, target_pitch;
-    get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
+	float target_roll, target_pitch;
+
+	if (try_c > 1500) {
+		// apply simple mode transform to pilot inputs
+		update_simple_mode();
+
+		// convert pilot input to lean angles
+		get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
+	}
+	else {
+		// apply simple mode transform to pilot inputs
+		update_simple_mode2();
+
+		// convert pilot input to lean angles
+
+		get_pilot_desired_lean_angles2(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
+	}
+
+	// depth sensor
+	/*RC_Channel *cdepth = rc().channel(int8_t(int8_t(9))); // channel 9: the channel controls the mode
+	int16_t depth_switch;
+	depth_switch = cdepth->get_radio_in();
+
+	// get the desired pressure
+
+
+	if (depth_switch < 1200) {
+		keep_at_same_depth(target_pitch);
+	} */
+
 
     // get pilot's desired yaw rate
     float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
@@ -62,7 +91,7 @@ void ModeStabilize::run()
 	int16_t back;
 	back = cback->get_radio_in();
 	if (back > 1500){
-		attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(-1*target_roll, -1*target_pitch, target_yaw_rate);
+		attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(-1.0f*target_roll, -1.0f*target_pitch, target_yaw_rate);
 	}
 	else {
 		attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(target_roll, target_pitch, target_yaw_rate);

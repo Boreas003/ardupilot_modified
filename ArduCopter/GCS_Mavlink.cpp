@@ -1,6 +1,8 @@
 #include "Copter.h"
 
 #include "GCS_Mavlink.h"
+#include <AP_AHRS/AP_AHRS.h>
+#include <AC_AttitudeControl/AC_AttitudeControl.h>
 
 MAV_TYPE GCS_Copter::frame_type() const
 {
@@ -227,7 +229,7 @@ int16_t GCS_MAVLINK_Copter::vfr_hud_throttle() const
  */
 void GCS_MAVLINK_Copter::send_pid_tuning()
 {
-    static const PID_TUNING_AXIS axes[] = {
+    /*static const PID_TUNING_AXIS axes[] = {
         PID_TUNING_ROLL,
         PID_TUNING_PITCH,
         PID_TUNING_YAW,
@@ -269,7 +271,19 @@ void GCS_MAVLINK_Copter::send_pid_tuning()
                                         pid_info->slew_rate,
                                         pid_info->Dmod);
         }
-    }
+    }*/
+	const Vector3f &rate_targets = copter.attitude_control->rate_bf_targets();
+	AP_AHRS_View ahrs = copter.attitude_control->get_ahrs();
+	mavlink_msg_pid_tuning_send(chan,
+								degrees(rate_targets.x),
+								degrees(ahrs.get_gyro().x),
+								degrees(rate_targets.x - ahrs.get_gyro().x),
+								degrees(rate_targets.y),
+								degrees(ahrs.get_gyro().y),
+								degrees(rate_targets.y - ahrs.get_gyro().y),
+								degrees(rate_targets.z),
+								degrees(ahrs.get_gyro().z),
+								degrees(rate_targets.z - ahrs.get_gyro().z));
 }
 
 // send winch status message

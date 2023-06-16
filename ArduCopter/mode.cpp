@@ -449,6 +449,30 @@ void Mode::get_pilot_desired_lean_angles(float &roll_out, float &pitch_out, floa
     // roll_out and pitch_out are returned
 }
 
+// roll_out and pitch_out are proportional to max angle
+void Mode::get_pilot_desired_lean_angles2(float &roll_out, float &pitch_out, float angle_max, float angle_limit) const
+{
+    // throttle failsafe check
+    if (copter.failsafe.radio || !copter.ap.rc_receiver_present) {
+        roll_out = 0;
+        pitch_out = 0;
+        return;
+    }
+    // fetch roll and pitch inputs
+    roll_out = channel_roll->get_control_in();
+    pitch_out = channel_pitch->get_control_in();
+
+    // limit max lean angle
+    angle_limit = constrain_float(angle_limit, 1000.0f, angle_max);
+
+    // scale roll and pitch inputs to ANGLE_MAX parameter range
+    float scaler = angle_max/(float)ROLL_PITCH_YAW_INPUT_MAX;
+    roll_out *= scaler;
+    pitch_out *= scaler;
+
+    // roll_out and pitch_out are returned
+}
+
 bool Mode::_TakeOff::triggered(const float target_climb_rate) const
 {
     if (!copter.ap.land_complete) {
@@ -960,6 +984,10 @@ float Mode::get_non_takeoff_throttle()
 
 void Mode::update_simple_mode(void) {
     copter.update_simple_mode();
+}
+
+void Mode::update_simple_mode2(void) {
+    copter.update_simple_mode2();
 }
 
 bool Mode::set_mode(Mode::Number mode, ModeReason reason)
