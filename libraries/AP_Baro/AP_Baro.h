@@ -85,6 +85,9 @@ public:
     // the pressure reading now - main loop 400Hz but Baro update 10Hz
 	float _pressure_now;
 
+	float get_depth(uint8_t instance) const {return sensors[instance].depth; }
+	float _depth_now;
+
     // temperature in degrees C
     float get_temperature(void) const { return get_temperature(_primary); }
     float get_temperature(uint8_t instance) const { return sensors[instance].temperature; }
@@ -259,6 +262,7 @@ private:
         float pressure;                 // pressure in Pascal
         float temperature;              // temperature in degrees C
         float altitude;                 // calculated altitude
+        float depth;
         AP_Float ground_pressure;
         float p_correction;
         baro_type_t type;               // 0 for air pressure (default), 1 for water pressure

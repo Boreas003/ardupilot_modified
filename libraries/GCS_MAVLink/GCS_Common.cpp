@@ -1818,11 +1818,13 @@ void GCS_MAVLINK::send_scaled_pressure_instance(uint8_t instance, void (*send_fn
     bool have_data = false;
 
     float press_abs = 0.0f;
-    int16_t temperature = 0; // Absolute pressure temperature
+    float depth = 0.0f;
+    //int16_t temperature = 0; // Absolute pressure temperature
     int16_t temperature_press_diff = 0; // Differential pressure temperature
     if (instance < barometer.num_instances()) {
         press_abs = barometer.get_pressure(instance) * 0.01f;
-        temperature = barometer.get_temperature(instance)*100;
+        //temperature = barometer.get_temperature(instance)*100;
+        depth = barometer.get_depth(instance) * 100.0f;
         have_data = true;
     }
 
@@ -1847,7 +1849,7 @@ void GCS_MAVLINK::send_scaled_pressure_instance(uint8_t instance, void (*send_fn
     if (!have_data) {
         return;
     }
-
+    /*
     send_fn(
         chan,
         AP_HAL::millis(),
@@ -1855,6 +1857,15 @@ void GCS_MAVLINK::send_scaled_pressure_instance(uint8_t instance, void (*send_fn
         press_diff, // hectopascal
         temperature, // 0.01 degrees C
         temperature_press_diff); // 0.01 degrees C
+        */
+
+    send_fn(
+    	chan,
+		AP_HAL::millis(),
+		press_abs,
+		press_diff,
+		depth,
+		temperature_press_diff);
 }
 
 void GCS_MAVLINK::send_scaled_pressure()

@@ -892,6 +892,7 @@ void AP_Baro::update(void)
     // store sensor pressure data
     _pressure_now = get_pressure(int8_t(1));
 
+    _depth_now = get_depth(int8_t(1));
     // logging
 #if HAL_LOGGING_ENABLED
     if (should_log()) {
