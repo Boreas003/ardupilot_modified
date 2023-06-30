@@ -74,6 +74,8 @@
 #define HAL_BARO_ALLOW_INIT_NO_BARO
 #endif
 
+#define HAL_BARO_ATMO_PRESS_DEFAULT 101000
+
 extern const AP_HAL::HAL& hal;
 
 // table of user settable parameters
@@ -220,6 +222,14 @@ const AP_Param::GroupInfo AP_Baro::var_info[] = {
     AP_SUBGROUPINFO(sensors[2].wind_coeff, "3_WCF_", 20, AP_Baro, WindCoeff),
 #endif
 #endif
+
+	// @Param: _ATMO_PRESS
+	// @DisplayName: Atmo Press
+	// @Description: User-defined atmospheric pressure, used within depth computation
+	// @Units: Pa
+	// @ReadOnly: False
+	// @User: Advanced
+	AP_GROUPINFO("_ATMO_PRESS", 21, AP_Baro, _atmo_pressure, HAL_BARO_ATMO_PRESS_DEFAULT),
 
     AP_GROUPEND
 };

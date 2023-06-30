@@ -287,6 +287,7 @@ private:
     AP_Float                            _specific_gravity; // the specific gravity of fluid for an ROV 1.00 for freshwater, 1.024 for salt water
     AP_Float                            _user_ground_temperature; // user override of the ground temperature used for EAS2TAS
     float                               _guessed_ground_temperature; // currently ground temperature estimate using our best abailable source
+    AP_Float							_atmo_pressure;	// user specified atmospheric pressure
 
     // when did we last notify the GCS of new pressure reference?
     uint32_t                            _last_notify_ms;
