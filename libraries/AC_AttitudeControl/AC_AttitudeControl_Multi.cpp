@@ -215,7 +215,7 @@ const AP_Param::GroupInfo AC_AttitudeControl_Multi::var_info[] = {
 
     AP_SUBGROUPINFO(_pid_rate_yaw, "RAT_YAW_", 3, AC_AttitudeControl_Multi, AC_PID),
 
-    // @Param: THR_MIX_MIN
+	// @Param: THR_MIX_MIN
     // @DisplayName: Throttle Mix Minimum
     // @Description: Throttle vs attitude control prioritisation used when landing (higher values mean we prioritise attitude control over throttle)
     // @Range: 0.1 0.25
@@ -236,6 +236,74 @@ const AP_Param::GroupInfo AC_AttitudeControl_Multi::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("THR_MIX_MAN", 6, AC_AttitudeControl_Multi, _thr_mix_man, AC_ATTITUDE_CONTROL_MAN_DEFAULT),
 
+	// @Param: DEP_PIT_P
+	// @DisplayName: Pitch axis rate controller P gain
+	// @Description: Pitch axis rate controller P gain.  Converts the difference between desired pitch rate and actual pitch rate into a motor speed output
+	// @Range: 0.01 0.50
+	// @Increment: 0.005
+	// @User: Standard
+
+	// @Param: DEP_PIT_I
+	// @DisplayName: Pitch axis rate controller I gain
+	// @Description: Pitch axis rate controller I gain.  Corrects long-term difference in desired pitch rate vs actual pitch rate
+	// @Range: 0.01 2.0
+	// @Increment: 0.01
+	// @User: Standard
+
+	// @Param: DEP_PIT_IMAX
+	// @DisplayName: Pitch axis rate controller I gain maximum
+	// @Description: Pitch axis rate controller I gain maximum.  Constrains the maximum motor output that the I gain will output
+	// @Range: 0 1
+	// @Increment: 0.01
+	// @User: Standard
+
+	// @Param: DEP_PIT_D
+	// @DisplayName: Pitch axis rate controller D gain
+	// @Description: Pitch axis rate controller D gain.  Compensates for short-term change in desired pitch rate vs actual pitch rate
+	// @Range: 0.0 0.05
+	// @Increment: 0.001
+	// @User: Standard
+
+	// @Param: DEP_PIT_FF
+	// @DisplayName: Pitch axis rate controller feed forward
+	// @Description: Pitch axis rate controller feed forward
+	// @Range: 0 0.5
+	// @Increment: 0.001
+	// @User: Standard
+
+	// @Param: DEP_PIT_FLTT
+	// @DisplayName: Pitch axis rate controller target frequency in Hz
+	// @Description: Pitch axis rate controller target frequency in Hz
+	// @Range: 5 100
+	// @Increment: 1
+	// @Units: Hz
+	// @User: Standard
+
+	// @Param: DEP_PIT_FLTE
+	// @DisplayName: Pitch axis rate controller error frequency in Hz
+	// @Description: Pitch axis rate controller error frequency in Hz
+	// @Range: 0 100
+	// @Increment: 1
+	// @Units: Hz
+	// @User: Standard
+
+	// @Param: DEP_PIT_FLTD
+	// @DisplayName: Pitch axis rate controller derivative frequency in Hz
+	// @Description: Pitch axis rate controller derivative frequency in Hz
+	// @Range: 5 100
+	// @Increment: 1
+	// @Units: Hz
+	// @User: Standard
+
+	// @Param: DEP_PIT_SMAX
+	// @DisplayName: Pitch slew rate limit
+	// @Description: Sets an upper limit on the slew rate produced by the combined P and D gains. If the amplitude of the control action produced by the rate feedback exceeds this value, then the D+P gain is reduced to respect the limit. This limits the amplitude of high frequency oscillations caused by an excessive gain. The limit should be set to no more than 25% of the actuators maximum slew rate to allow for load effects. Note: The gain will not be reduced to less than 10% of the nominal value. A value of zero will disable this feature.
+	// @Range: 0 200
+	// @Increment: 0.5
+	// @User: Advanced
+
+	AP_SUBGROUPINFO(_pid_dep_pitch, "DEP_PIT_", 7, AC_AttitudeControl_Multi, AC_PID),
+
     AP_GROUPEND
 };
 
@@ -244,7 +312,8 @@ AC_AttitudeControl_Multi::AC_AttitudeControl_Multi(AP_AHRS_View &ahrs, const AP_
     _motors_multi(motors),
     _pid_rate_roll(AC_ATC_MULTI_RATE_RP_P, AC_ATC_MULTI_RATE_RP_I, AC_ATC_MULTI_RATE_RP_D, 0.0f, AC_ATC_MULTI_RATE_RP_IMAX, AC_ATC_MULTI_RATE_RP_FILT_HZ, 0.0f, AC_ATC_MULTI_RATE_RP_FILT_HZ, dt),
     _pid_rate_pitch(AC_ATC_MULTI_RATE_RP_P, AC_ATC_MULTI_RATE_RP_I, AC_ATC_MULTI_RATE_RP_D, 0.0f, AC_ATC_MULTI_RATE_RP_IMAX, AC_ATC_MULTI_RATE_RP_FILT_HZ, 0.0f, AC_ATC_MULTI_RATE_RP_FILT_HZ, dt),
-    _pid_rate_yaw(AC_ATC_MULTI_RATE_YAW_P, AC_ATC_MULTI_RATE_YAW_I, AC_ATC_MULTI_RATE_YAW_D, 0.0f, AC_ATC_MULTI_RATE_YAW_IMAX, AC_ATC_MULTI_RATE_RP_FILT_HZ, AC_ATC_MULTI_RATE_YAW_FILT_HZ, 0.0f, dt)
+    _pid_rate_yaw(AC_ATC_MULTI_RATE_YAW_P, AC_ATC_MULTI_RATE_YAW_I, AC_ATC_MULTI_RATE_YAW_D, 0.0f, AC_ATC_MULTI_RATE_YAW_IMAX, AC_ATC_MULTI_RATE_RP_FILT_HZ, AC_ATC_MULTI_RATE_YAW_FILT_HZ, 0.0f, dt),
+	_pid_dep_pitch(AC_ATC_MULTI_RATE_RP_P, AC_ATC_MULTI_RATE_RP_I, AC_ATC_MULTI_RATE_RP_D, 0.0f, AC_ATC_MULTI_RATE_RP_IMAX, AC_ATC_MULTI_RATE_RP_FILT_HZ, 0.0f, AC_ATC_MULTI_RATE_RP_FILT_HZ, dt)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -341,7 +410,7 @@ void AC_AttitudeControl_Multi::rate_controller_run()
 
     Vector3f gyro_latest = _ahrs.get_gyro_latest();
 
-    if (fmode == 0) {
+    if (fmode == 0 || fmode == 30) {
     	// backward mode
 		RC_Channel *cback = rc().channel(int8_t(12)); // channel 13 from 988 to 2012
 		int16_t back;

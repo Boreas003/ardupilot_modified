@@ -76,6 +76,7 @@ public:
     virtual AC_PID& get_rate_roll_pid() = 0;
     virtual AC_PID& get_rate_pitch_pid() = 0;
     virtual AC_PID& get_rate_yaw_pid() = 0;
+    virtual AC_PID& get_dep_pitch_pid() = 0;
 
     // get the roll acceleration limit in centidegrees/s/s or radians/s/s
     float get_accel_roll_max_cdss() const { return _accel_roll_max; }
@@ -133,6 +134,9 @@ public:
 
     // reset rate controller I terms
     void reset_rate_controller_I_terms();
+
+    // reset depth controller I terms
+    void reset_dep_controller_I_terms();
 
     // reset rate controller I terms smoothly to zero in 0.5 seconds
     void reset_rate_controller_I_terms_smoothly();

@@ -153,7 +153,7 @@ void AP_MotorsMatrix::output_to_motors()
     uint8_t fmode;
     fmode = copter.get_mode_p();
 
-    if (fmode == 0){
+    if (fmode == 0 || fmode == 30){
 
 		switch (_spool_state) {
 			case SpoolState::SHUT_DOWN:
@@ -276,6 +276,9 @@ void AP_MotorsMatrix::output_to_motors()
         		}
         		else {
         			value = SRV_Channels::return_channel(SRV_Channel::k_motor5)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+        			if (value > 1500){
+        				value = 1500;
+        			}
         		}
         		rc_write(i, value);
         	}
@@ -288,6 +291,9 @@ void AP_MotorsMatrix::output_to_motors()
 				}
 				else {
 					value = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+					if (value < 1500){
+						value = 1500;
+					}
 				}
 				rc_write(i, value);
         	}
@@ -300,6 +306,9 @@ void AP_MotorsMatrix::output_to_motors()
 				}
 				else {
 					value = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
+					if (value > 1500){
+						value = 1500;
+					}
 				}
 				rc_write(i, value);
 			}
@@ -312,6 +321,9 @@ void AP_MotorsMatrix::output_to_motors()
 				}
 				else {
 					value = SRV_Channels::return_channel(SRV_Channel::k_motor8)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
+					if (value < 1500){
+						value = 1500;
+					}
 				}
 				rc_write(i, value);
 			}

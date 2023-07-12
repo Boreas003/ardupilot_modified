@@ -15,6 +15,7 @@ void ModeStabilize::run()
 	try_c = ctry->get_radio_in();
 
 	float target_roll, target_pitch;
+	_get_depth_reference = true;
 
 	if (try_c > 1500) {
 		// apply simple mode transform to pilot inputs
@@ -31,19 +32,6 @@ void ModeStabilize::run()
 
 		get_pilot_desired_lean_angles2(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
 	}
-
-	// depth sensor
-	/*RC_Channel *cdepth = rc().channel(int8_t(int8_t(9))); // channel 9: the channel controls the mode
-	int16_t depth_switch;
-	depth_switch = cdepth->get_radio_in();
-
-	// get the desired pressure
-
-
-	if (depth_switch < 1200) {
-		keep_at_same_depth(target_pitch);
-	} */
-
 
     // get pilot's desired yaw rate
     float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());

@@ -217,7 +217,7 @@ public:
     friend class ModeAutorotate;
     friend class ModeTurtle;
     friend class ModeGround;
-    friend class ModeStandby;
+    friend class ModeDepctrl;
     friend class ModeTest;
 
     Copter(void);
@@ -989,8 +989,8 @@ private:
 #if MODE_GROUND_ENABLED == ENABLED
     ModeGround mode_ground;
 #endif
-#if MODE_STANDBY_ENABLED == ENABLED
-    ModeStandby mode_standby;
+#if MODE_DEPCTRL_ENABLED == ENABLED
+    ModeDepctrl mode_depctrl;
 #endif
 #if MODE_TEST_ENABLED == ENABLED
     ModeTest mode_test;

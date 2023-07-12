@@ -189,6 +189,12 @@ void AC_AttitudeControl::reset_rate_controller_I_terms()
     get_rate_yaw_pid().reset_I();
 }
 
+// reset dep controller I terms
+void AC_AttitudeControl::reset_dep_controller_I_terms()
+{
+	get_dep_pitch_pid().reset_I();
+}
+
 // reset rate controller I terms smoothly to zero in 0.5 seconds
 void AC_AttitudeControl::reset_rate_controller_I_terms_smoothly()
 {

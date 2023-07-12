@@ -1,4 +1,7 @@
 #include "Copter.h"
+#include <AP_Baro/AP_Baro.h>
+#include <AC_AttitudeControl/AC_AttitudeControl_Multi.h>
+#include <AC_AttitudeControl/AC_AttitudeControl.h>
 
 /*
  * High level calls to set and update flight modes logic for individual
@@ -181,9 +184,9 @@ Mode *Copter::mode_from_mode_num(const Mode::Number mode)
             break;
 #endif
 
-#if MODE_STANDBY_ENABLED == ENABLED
-        case Mode::Number::STANDBY:
-            ret = &mode_standby;
+#if MODE_DEPCTRL_ENABLED == ENABLED
+        case Mode::Number::DEPCTRL:
+            ret = &mode_depctrl;
             break;
 #endif
 
@@ -471,6 +474,32 @@ void Mode::get_pilot_desired_lean_angles2(float &roll_out, float &pitch_out, flo
     pitch_out *= scaler;
 
     // roll_out and pitch_out are returned
+}
+
+// depth control for uuv
+void Mode::get_pilot_desired_lean_angles_dep_ctrl(float &roll_out, float &pitch_out, bool whether_get, float angle_max, float angle_limit)
+{
+	// throttle failsafe check
+	if (copter.failsafe.radio || !copter.ap.rc_receiver_present) {
+		roll_out = 0;
+		pitch_out = 0;
+		return;
+	}
+	// fetch roll inputs
+	roll_out = channel_roll->get_control_in();
+	// limit max lean angle
+	angle_limit = constrain_float(angle_limit, 1000.0f, angle_max);
+	// scale roll and pitch inputs to ANGLE_MAX parameter range
+	float scaler = angle_max/(float)ROLL_PITCH_YAW_INPUT_MAX;
+	roll_out *= scaler;
+
+	// fetch pitch inputs
+	if (whether_get){
+		_depth_reference = AP_Baro::get_singleton()->get_depth2();
+		attitude_control->reset_dep_controller_I_terms();
+	}
+
+	pitch_out = attitude_control->get_dep_pitch_pid().update_all_depth(_depth_reference, AP_Baro::get_singleton()->get_depth2(), 1);
 }
 
 bool Mode::_TakeOff::triggered(const float target_climb_rate) const
