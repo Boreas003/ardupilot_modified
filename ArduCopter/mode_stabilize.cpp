@@ -1,5 +1,7 @@
 #include "Copter.h"
 #include <RC_Channel/RC_Channel.h>
+#include "mode.h"
+bool _get_depth_reference;
 
 /*
  * Init and run calls for stabilize flight mode

@@ -494,7 +494,7 @@ void Mode::get_pilot_desired_lean_angles_dep_ctrl(float &roll_out, float &pitch_
 	roll_out *= scaler;
 
 	// fetch pitch inputs
-	if (whether_get){
+	if (whether_get == true){
 		_depth_reference = AP_Baro::get_singleton()->get_depth2();
 		attitude_control->reset_dep_controller_I_terms();
 	}

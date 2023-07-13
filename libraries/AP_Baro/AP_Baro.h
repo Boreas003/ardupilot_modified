@@ -87,7 +87,7 @@ public:
 
 	float get_depth(uint8_t instance) const {return sensors[instance].depth; }
 	float get_depth2(void) const {return _depth_now;}
-	float _depth_now = 0.0;
+	float _depth_now;
 
     // temperature in degrees C
     float get_temperature(void) const { return get_temperature(_primary); }

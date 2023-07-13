@@ -6,6 +6,8 @@ class ParametersG2;
 
 class GCS_Copter;
 
+extern bool _get_depth_reference;
+
 class Mode {
 
 public:
@@ -98,7 +100,6 @@ public:
     float get_pilot_desired_yaw_rate(float yaw_in);
     float get_pilot_desired_throttle() const;
 	float _depth_reference;
-	bool _get_depth_reference = true;
 
     // returns climb target_rate reduced to avoid obstacles and
     // altitude fence
