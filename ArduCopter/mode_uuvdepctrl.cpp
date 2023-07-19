@@ -1,6 +1,5 @@
 #include "Copter.h"
 #include "mode.h"
-bool _get_depth_reference;
 
 /*
  * Init and run calls for stand-by mode

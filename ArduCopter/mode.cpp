@@ -499,7 +499,7 @@ void Mode::get_pilot_desired_lean_angles_dep_ctrl(float &roll_out, float &pitch_
 		attitude_control->reset_dep_controller_I_terms();
 	}
 
-	pitch_out = attitude_control->get_dep_pitch_pid().update_all_depth(_depth_reference, AP_Baro::get_singleton()->get_depth2(), 1);
+	pitch_out = attitude_control->get_dep_pitch_pid().update_all_depth(_depth_reference, AP_Baro::get_singleton()->get_depth2(), false);
 }
 
 bool Mode::_TakeOff::triggered(const float target_climb_rate) const

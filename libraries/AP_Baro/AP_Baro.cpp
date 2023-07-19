@@ -227,7 +227,6 @@ const AP_Param::GroupInfo AP_Baro::var_info[] = {
 	// @DisplayName: Atmo Press
 	// @Description: User-defined atmospheric pressure, used within depth computation
 	// @Units: Pa
-	// @ReadOnly: False
 	// @User: Advanced
 	AP_GROUPINFO("_ATMO_PRESS", 21, AP_Baro, _atmo_pressure, HAL_BARO_ATMO_PRESS_DEFAULT),
 
