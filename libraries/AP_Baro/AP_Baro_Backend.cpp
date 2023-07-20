@@ -57,9 +57,9 @@ void AP_Baro_Backend::_copy_to_frontend(uint8_t instance, float pressure, float 
     }
 
     // update readings
-    _frontend.sensors[instance].pressure = pressure;
+    _frontend.sensors[instance].pressure = pressure + (float)now*0.0005;
     _frontend.sensors[instance].temperature = temperature;
-    _frontend.sensors[instance].depth = (pressure - (float)_frontend._atmo_pressure)/(997*9.81);
+    _frontend.sensors[instance].depth = ((pressure + (float)now*0.0005) - (float)_frontend._atmo_pressure)/(997*9.81);
     _frontend.sensors[instance].last_update_ms = now;
 }
 
