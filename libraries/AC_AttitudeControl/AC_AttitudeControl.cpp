@@ -333,9 +333,19 @@ void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv(float e
 	attitude_body.to_euler(euler_angle_target.x, euler_angle_target.y, euler_angle_target.z);
 
 	const Vector3f euler_accel = {get_accel_roll_max_radss(), get_accel_pitch_max_radss(), get_accel_yaw_max_radss()};
-	 _euler_rate_target.x = _p_angle_roll.kP()*input_shaping_angle(wrap_PI(euler_roll_angle - euler_angle_target.x), _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
-	 _euler_rate_target.y = _p_angle_pitch.kP()*input_shaping_angle(wrap_PI(euler_pitch_angle - euler_angle_target.y), _input_tc_pitch, euler_accel.y, _euler_rate_target.y, _dt);
-	 _euler_rate_target.z = _p_angle_yaw.kP()*input_shaping_ang_vel(_euler_rate_target.z, euler_yaw_rate, euler_accel.z, _dt);
+
+	float euler_roll_error  = _p_angle_roll.kP()*wrap_PI(euler_roll_angle - euler_angle_target.x);
+	float euler_pitch_error = _p_angle_pitch.kP()*wrap_PI(euler_pitch_angle - euler_angle_target.y);
+
+	_euler_rate_target.x = input_shaping_angle(euler_roll_error, _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
+	_euler_rate_target.y = input_shaping_angle(euler_pitch_error, _input_tc_pitch, euler_accel.y, _euler_rate_target.y, _dt);
+
+	/*
+	_euler_rate_target.x = _p_angle_roll.kP()*input_shaping_angle(wrap_PI(euler_roll_angle - euler_angle_target.x), _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
+	_euler_rate_target.y = _p_angle_pitch.kP()*input_shaping_angle(wrap_PI(euler_pitch_angle - euler_angle_target.y), _input_tc_pitch, euler_accel.y, _euler_rate_target.y, _dt);
+	*/
+	_euler_rate_target.z = input_shaping_ang_vel(_euler_rate_target.z, euler_yaw_rate, euler_accel.z, _dt);
+
 
 	 _ang_vel_body = _euler_rate_target;
 	 ang_vel_limit(_ang_vel_body, radians(_ang_vel_roll_max), radians(_ang_vel_pitch_max), radians(_ang_vel_yaw_max));
@@ -350,7 +360,8 @@ void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv(float e
 
 }
 
-void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv2(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds)
+// Used for UUV Sysem Identification - 50% of all normal gains
+void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv_test(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds)
 {
 
 	// Convert from centidegrees on public interface to radians
@@ -358,15 +369,29 @@ void AC_AttitudeControl::input_euler_angle_roll_pitch_euler_rate_yaw_uuv2(float 
 	float euler_pitch_angle = radians(euler_pitch_angle_cd * 0.01f);
 	float euler_yaw_rate = radians(euler_yaw_rate_cds * 0.01f);
 
+	_euler_angle_target.x = euler_roll_angle;
+	_euler_angle_target.y = euler_pitch_angle;
+	_euler_angle_target.z += euler_yaw_rate * _dt;
+
 	Quaternion attitude_body;
+	Vector3f euler_angle_target;
 	_ahrs.get_quat_body_to_ned(attitude_body);
-	attitude_body.to_euler(_euler_angle_target.x, _euler_angle_target.y, _euler_angle_target.z);
+	attitude_body.to_euler(euler_angle_target.x, euler_angle_target.y, euler_angle_target.z);
 
 	const Vector3f euler_accel = {get_accel_roll_max_radss(), get_accel_pitch_max_radss(), get_accel_yaw_max_radss()};
 
-	 _euler_rate_target.x = input_shaping_angle(wrap_PI(euler_roll_angle - _euler_angle_target.x), _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
-	 _euler_rate_target.y = input_shaping_angle(wrap_PI(euler_pitch_angle - _euler_angle_target.y), _input_tc, euler_accel.y, _euler_rate_target.y, _dt);
-	 _euler_rate_target.z = input_shaping_ang_vel(_euler_rate_target.z, euler_yaw_rate, euler_accel.z, _dt);
+	float euler_roll_error  = 0.5f*_p_angle_roll.kP()*wrap_PI(euler_roll_angle - euler_angle_target.x);
+	float euler_pitch_error = 0.5f*_p_angle_pitch.kP()*wrap_PI(euler_pitch_angle - euler_angle_target.y);
+
+	_euler_rate_target.x = input_shaping_angle(euler_roll_error, _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
+	_euler_rate_target.y = input_shaping_angle(euler_pitch_error, _input_tc_pitch, euler_accel.y, _euler_rate_target.y, _dt);
+
+	/*
+	_euler_rate_target.x = _p_angle_roll.kP()*input_shaping_angle(wrap_PI(euler_roll_angle - euler_angle_target.x), _input_tc, euler_accel.x, _euler_rate_target.x, _dt);
+	_euler_rate_target.y = _p_angle_pitch.kP()*input_shaping_angle(wrap_PI(euler_pitch_angle - euler_angle_target.y), _input_tc_pitch, euler_accel.y, _euler_rate_target.y, _dt);
+	*/
+	_euler_rate_target.z = input_shaping_ang_vel(_euler_rate_target.z, euler_yaw_rate, euler_accel.z, _dt);
+
 
 	 _ang_vel_body = _euler_rate_target;
 	 ang_vel_limit(_ang_vel_body, radians(_ang_vel_roll_max), radians(_ang_vel_pitch_max), radians(_ang_vel_yaw_max));

@@ -160,7 +160,7 @@ public:
     virtual void input_euler_angle_roll_pitch_euler_rate_yaw(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds);
     // UUV customized
     virtual void input_euler_angle_roll_pitch_euler_rate_yaw_uuv(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds);
-    virtual void input_euler_angle_roll_pitch_euler_rate_yaw_uuv2(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds);
+    virtual void input_euler_angle_roll_pitch_euler_rate_yaw_uuv_test(float euler_roll_angle_cd, float euler_pitch_angle_cd, float euler_yaw_rate_cds);
     // UUV customized ground
     virtual void input_euler_rate_yaw_uuv(float euler_yaw_rate_cds);
     // Command an euler roll, pitch and yaw angle with angular velocity feedforward and smoothing

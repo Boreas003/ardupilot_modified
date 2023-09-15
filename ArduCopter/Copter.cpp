@@ -157,7 +157,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(check_dynamic_flight,  50,     75,  72),
 #endif
 #if LOGGING_ENABLED == ENABLED
-    SCHED_TASK(fourhundred_hz_logging,400,    50,  75),
+    SCHED_TASK(fourhundred_hz_logging,100,    50,  75), // UUV customized 100 logging
 #endif
     SCHED_TASK_CLASS(AP_Notify,            &copter.notify,              update,          50,  90,  78),
     SCHED_TASK(one_hz_loop,            1,    100,  81),

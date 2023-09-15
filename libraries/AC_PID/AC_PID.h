@@ -35,9 +35,12 @@ public:
     //  the integral is then updated based on the setting of the limit flag
     float update_all(float target, float measurement, bool limit = false);
     float update_all_pitch(float target, float measurement, bool limit = false);
+    float update_all_sysid(float target, float measurement, bool limit = false);
+    float update_all_pitch_sysid(float target, float measurement, bool limit = false);
     float update_all_yaw(float target, float measurement, bool limit = false);
     float update_all_depth(float target, float measurement, bool limit = false);
     float update_all_yaw_back(float target, float measurement, bool limit = false);
+    float update_all_yaw_back_sysid(float target, float measurement, bool limit = false);
 
     //  update_error - set error input to PID controller and calculate outputs
     //  target is set to zero and error is set and filtered
