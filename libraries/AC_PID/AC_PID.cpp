@@ -178,53 +178,6 @@ float AC_PID::update_all(float target, float measurement, bool limit)
     return P_out + _integrator + D_out;
 }
 
-float AC_PID::update_all_sysid(float target, float measurement, bool limit)
-{
-	// don't process inf or NaN
-	if (!isfinite(target) || !isfinite(measurement)) {
-		return 0.0f;
-	}
-
-	// reset input filter to value received
-	if (_flags._reset_filter) {
-		_flags._reset_filter = false;
-		_target = target;
-		_error = _target - measurement;
-		_derivative = 0.0f;
-	} else {
-		float error_last = _error;
-		_target += get_filt_T_alpha() * (target - _target);
-		_error += get_filt_E_alpha() * ((_target - measurement) - _error);
-
-		// calculate and filter derivative
-		if (_dt > 0.0f) {
-			float derivative = (_error - error_last) / _dt;
-			_derivative += get_filt_D_alpha() * (derivative - _derivative);
-		}
-	}
-
-	// update I term
-	update_i(limit);
-
-	float P_out = (_error * _kp);
-	float D_out = (_derivative * _kd);
-
-	// calculate slew limit modifier for P+D
-	_pid_info.Dmod = _slew_limiter.modifier((_pid_info.P + _pid_info.D) * _slew_limit_scale, _dt);
-	_pid_info.slew_rate = _slew_limiter.get_slew_rate();
-
-	P_out *= _pid_info.Dmod;
-	D_out *= _pid_info.Dmod;
-
-	_pid_info.target = _target;
-	_pid_info.actual = measurement;
-	_pid_info.error = _error;
-	_pid_info.P = P_out;
-	_pid_info.D = D_out;
-
-	return 0.5f*(P_out + _integrator + D_out);
-}
-
 float AC_PID::update_all_pitch(float target, float measurement, bool limit)
 {
 	// don't process inf or NaN
@@ -270,53 +223,6 @@ float AC_PID::update_all_pitch(float target, float measurement, bool limit)
 	_pid_info.D = D_out;
 
 	return P_out + _integrator + D_out;
-}
-
-float AC_PID::update_all_pitch_sysid(float target, float measurement, bool limit)
-{
-	// don't process inf or NaN
-	if (!isfinite(target) || !isfinite(measurement)) {
-		return 0.0f;
-	}
-
-	// reset input filter to value received
-	if (_flags._reset_filter) {
-		_flags._reset_filter = false;
-		_target = target;
-		_error = _target - measurement;
-		_derivative = 0.0f;
-	} else {
-		float error_last = _error;
-		_target += get_filt_T_alpha() * (target - _target);
-		_error += get_filt_E_alpha() * ((_target - measurement) - _error);
-
-		// calculate and filter derivative
-		if (_dt > 0.0f) {
-			float derivative = (_error - error_last) / _dt;
-			_derivative += get_filt_D_alpha() * (derivative - _derivative);
-		}
-	}
-
-	// update I term
-	update_i(limit);
-
-	float P_out = -1.0*(_error * _kp);
-	float D_out = (_derivative * _kd);
-
-	// calculate slew limit modifier for P+D
-	_pid_info.Dmod = _slew_limiter.modifier((_pid_info.P + _pid_info.D) * _slew_limit_scale, _dt);
-	_pid_info.slew_rate = _slew_limiter.get_slew_rate();
-
-	P_out *= _pid_info.Dmod;
-	D_out *= _pid_info.Dmod;
-
-	_pid_info.target = _target;
-	_pid_info.actual = measurement;
-	_pid_info.error = _error;
-	_pid_info.P = P_out;
-	_pid_info.D = D_out;
-
-	return 0.5f*(P_out + _integrator + D_out);
 }
 
 float AC_PID::update_all_depth(float target, float measurement, bool limit)
@@ -459,53 +365,6 @@ float AC_PID::update_all_yaw_back(float target, float measurement, bool limit)
     _pid_info.D = D_out;
 
     return (P_out + _integrator + D_out)*-1;
-}
-
-float AC_PID::update_all_yaw_back_sysid(float target, float measurement, bool limit)
-{
-    // don't process inf or NaN
-    if (!isfinite(target) || !isfinite(measurement)) {
-        return 0.0f;
-    }
-
-    // reset input filter to value received
-    if (_flags._reset_filter) {
-        _flags._reset_filter = false;
-        _target = target;
-        _error = _target - measurement;
-        _derivative = 0.0f;
-    } else {
-        float error_last = _error;
-        _target += get_filt_T_alpha() * (target - _target);
-        _error += get_filt_E_alpha() * ((_target - measurement) - _error);
-
-        // calculate and filter derivative
-        if (_dt > 0.0f) {
-            float derivative = (_error - error_last) / _dt;
-            _derivative += get_filt_D_alpha() * (derivative - _derivative);
-        }
-    }
-
-    // update I term
-    update_i(limit);
-
-    float P_out = (_error * _kp);
-    float D_out = (_derivative * _kd);
-
-    // calculate slew limit modifier for P+D
-    _pid_info.Dmod = _slew_limiter.modifier((_pid_info.P + _pid_info.D) * _slew_limit_scale, _dt);
-    _pid_info.slew_rate = _slew_limiter.get_slew_rate();
-
-    P_out *= _pid_info.Dmod;
-    D_out *= _pid_info.Dmod;
-
-    _pid_info.target = _target;
-    _pid_info.actual = measurement;
-    _pid_info.error = _error;
-    _pid_info.P = P_out;
-    _pid_info.D = D_out;
-
-    return (P_out + _integrator + D_out)*-1.0f*0.5f;
 }
 
 //  update_error - set error input to PID controller and calculate outputs
