@@ -237,8 +237,10 @@ public:
         k_param_battery_monitoring = 141,   // deprecated - can be deleted
         k_param_volt_div_ratio, // deprecated - can be deleted
         k_param_curr_amp_per_volt,  // deprecated - can be deleted
-        k_param_input_voltage,  // deprecated - can be deleted
-        k_param_pack_capacity,  // deprecated - can be deleted
+        //k_param_input_voltage,  // deprecated - can be deleted
+        //k_param_pack_capacity,  // deprecated - can be deleted
+        k_param_leak_detector, // Leak Detector
+        k_param_failsafe_leak, // leak failsafe behavior
         k_param_compass_enabled_deprecated,
         k_param_compass,
         k_param_rangefinder_enabled_old, // deprecated
@@ -405,6 +407,7 @@ public:
 #endif
 
     AP_Int8         failsafe_gcs;               // ground station failsafe behavior
+    AP_Int8			failsafe_leak;				// leak detection failsafe behavior
     AP_Int16        gps_hdop_good;              // GPS Hdop value at or below this value represent a good position
 
     AP_Int8         super_simple;

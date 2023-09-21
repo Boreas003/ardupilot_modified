@@ -174,6 +174,13 @@ const AP_Param::Info Copter::var_info[] = {
     // @User: Standard
     GSCALAR(failsafe_gcs, "FS_GCS_ENABLE", FS_GCS_DISABLED),
 
+    // @Param: FS_LEAK_ENABLE
+    // @DisplayName: Leak Failsafe Enable
+    // @Description: Controls what action to take if a leak is detected.
+    // @Values: 0:Disabled,1:Warn only,2:Enter surface mode
+    // @User: Standard
+    GSCALAR(failsafe_leak, "FS_LEAK_ENABLE", FS_LEAK_WARN_ONLY),
+
     // @Param: GPS_HDOP_GOOD
     // @DisplayName: GPS Hdop Good
     // @Description: GPS Hdop value at or below this value represent a good position.  Used for pre-arm checks
@@ -624,6 +631,11 @@ const AP_Param::Info Copter::var_info[] = {
     // @Group: GPS
     // @Path: ../libraries/AP_GPS/AP_GPS.cpp
     GOBJECT(gps, "GPS", AP_GPS),
+
+    // Leak detector
+    // @Group: LEAK
+    // @Path: ../libraries/AP_LeakDetector/AP_LeakDetector.cpp
+    GOBJECT(leak_detector, "LEAK", AP_LeakDetector),
 
     // @Group: SCHED_
     // @Path: ../libraries/AP_Scheduler/AP_Scheduler.cpp

@@ -150,6 +150,8 @@ void Copter::init_ardupilot()
     barometer.set_log_baro_bit(MASK_LOG_IMU);
     barometer.calibrate();
 
+    leak_detector.init();
+
     // initialise rangefinder
     init_rangefinder();
 

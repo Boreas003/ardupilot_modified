@@ -551,6 +551,9 @@ void Copter::twentyfive_hz_logging()
 // three_hz_loop - 3.3hz loop
 void Copter::three_hz_loop()
 {
+	leak_detector.update();
+
+	failsafe_leak_check();
     // check if we've lost contact with the ground station
     failsafe_gcs_check();
 

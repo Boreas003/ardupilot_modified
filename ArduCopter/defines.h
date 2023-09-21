@@ -168,6 +168,11 @@ enum LoggingParameters {
 #define FS_EKF_ACTION_ALTHOLD               2       // switch to ALTHOLD mode on EKF failsafe
 #define FS_EKF_ACTION_LAND_EVEN_STABILIZE   3       // switch to Land mode on EKF failsafe even if in a manual flight mode like stabilize
 
+// Leak failsafe definitions (FS_LEAK_ENABLE parameter)
+#define FS_LEAK_DISABLED    0 // Disabled
+#define FS_LEAK_WARN_ONLY   1 // Only send warning to gcs
+#define FS_LEAK_SURFACE     2 // Switch to surface mode
+
 // for PILOT_THR_BHV parameter
 #define THR_BEHAVE_FEEDBACK_FROM_MID_STICK (1<<0)
 #define THR_BEHAVE_HIGH_THROTTLE_CANCELS_LAND (1<<1)
