@@ -44,6 +44,7 @@ public:
 
     // output_to_motors - sends minimum values out to the motors
     virtual void        output_to_motors() override;
+    virtual void 		output_to_motors_sysid() override;
 
     // get_motor_mask - returns a bitmask of which outputs are being used for motors or servos (1 means being used)
     //  this can be used to ensure other pwm outputs (i.e. for servos) do not conflict
@@ -52,6 +53,7 @@ public:
 protected:
     // output - sends commands to the motors
     void                output_armed_stabilizing() override;
+    void                output_armed_stabilizing_sysid() override;
 
     const char* _get_frame_string() const override { return "SINGLE"; }
 

@@ -11,32 +11,31 @@ bool _get_depth_reference;
 // should be called at 100hz or more
 void ModeStabilize::run()
 {
-	// two different attitude controllers
-	RC_Channel *ctry = rc().channel(int8_t(6)); // channel 7
-	int16_t try_c;
-	try_c = ctry->get_radio_in();
+	// systemID mode
+	RC_Channel *csysid = rc().channel(int8_t(6)); // channel 7
+	int16_t sysid_c;
+	sysid_c = csysid->get_radio_in();
 
 	float target_roll, target_pitch;
+	float target_yaw_rate;
 	_get_depth_reference = true;
 
-	if (try_c > 1500) {
-		// apply simple mode transform to pilot inputs
-		update_simple_mode();
-
-		// convert pilot input to lean angles
-		get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
+	if (sysid_c < 1500){ 	// systemID mode
+		target_roll = 0.0f;
+		target_pitch = 0.0f;
+		target_yaw_rate = 0.0f;
 	}
-	else {
+	else {					// normal mode
 		// apply simple mode transform to pilot inputs
 		update_simple_mode2();
 
 		// convert pilot input to lean angles
-
 		get_pilot_desired_lean_angles2(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
+
+		// get pilot's desired yaw rate
+		target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
 	}
 
-    // get pilot's desired yaw rate
-    float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
 
     if (!motors->armed()) {
         // Motors should be Stopped
@@ -87,8 +86,8 @@ void ModeStabilize::run()
 		attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_uuv(target_roll, target_pitch, target_yaw_rate);
 	}
 
-    // output pilot's throttle
-    attitude_control->set_throttle_out(get_pilot_desired_throttle(),
-                                       false,
-                                       g.throttle_filt);
+	// output pilot's throttle
+	attitude_control->set_throttle_out(get_pilot_desired_throttle(),
+									   false,
+									   g.throttle_filt);
 }

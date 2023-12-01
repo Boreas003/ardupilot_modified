@@ -17,6 +17,11 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_BattMonitor/AP_BattMonitor.h>
 #include <AP_Logger/AP_Logger.h>
+#include <RC_Channel/RC_Channel.h>
+#include "../../ArduCopter/Copter.h"
+#include "../../ArduCopter/mode.h"
+
+extern Copter copter;
 
 extern const AP_HAL::HAL& hal;
 
@@ -227,7 +232,14 @@ AP_MotorsMulticopter::AP_MotorsMulticopter(uint16_t loop_rate, uint16_t speed_hz
 // output - sends commands to the motors
 void AP_MotorsMulticopter::output()
 {
-    // update throttle filter
+	RC_Channel *csysid = rc().channel(int8_t(6)); // channel 7
+	int16_t sysid_c;
+	sysid_c = csysid->get_radio_in();
+
+	uint8_t fmode;
+	fmode = copter.get_mode_p();
+
+	// update throttle filter
     update_throttle_filter();
 
     // calc filtered battery voltage and lift_max
@@ -237,13 +249,23 @@ void AP_MotorsMulticopter::output()
     output_logic();
 
     // calculate thrust
-    output_armed_stabilizing();
+    if (sysid_c < 1500 && fmode == 0) { // sysid
+    	output_armed_stabilizing_sysid();
+    }
+    else { // normal
+    	output_armed_stabilizing();
+    }
 
     // apply any thrust compensation for the frame
     thrust_compensation();
 
     // convert rpy_thrust values to pwm
-    output_to_motors();
+    if (sysid_c < 1500 && fmode == 0) { // sysid
+        	output_to_motors_sysid();
+	}
+	else { // normal
+		output_to_motors();
+	}
 
     // output any booster throttle
     output_boost_throttle();

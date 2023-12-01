@@ -520,6 +520,204 @@ void AP_MotorsMatrix::output_to_motors()
 
 }
 
+
+void AP_MotorsMatrix::output_to_motors_sysid()
+{
+    int8_t i;
+    uint8_t fmode;
+    fmode = copter.get_mode_p();
+
+    if (fmode == 0){
+		switch (_spool_state) {
+			case SpoolState::SHUT_DOWN:
+				// no output
+				for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+					if (motor_enabled[i]) {
+						if (i == 0 || i == 1 || i == 2 || i == 3){
+							_actuator[i] = 0.544f;
+						}
+						else {
+							_actuator[i] = 0.0f;
+						}
+					}
+				}
+				break;
+			case SpoolState::GROUND_IDLE:
+				// sends output to motors when armed but not flying
+				for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+					if (motor_enabled[i]) {
+						if (i == 0 || i == 1 || i == 2 || i == 3){
+							set_actuator_with_slew(_actuator[i], 0.544f);
+						}
+						else {
+							set_actuator_with_slew(_actuator[i], 0.0f);//actuator_spin_up_to_ground_idle());
+						}
+					}
+				}
+				break;
+			case SpoolState::SPOOLING_UP:
+			case SpoolState::SPOOLING_DOWN:
+			case SpoolState::THROTTLE_UNLIMITED:
+				// set motor output based on thrust requests
+				// 8 motors in total
+				// 4 servos outputs
+				for (i = 4; i < 8; i++) {
+					if (motor_enabled[i]){
+						_actuator[i] = _thrust_rpyt_out[i];
+					}
+				}
+				// 4 motors output
+				if (motor_enabled[3] && motor_enabled[2] && motor_enabled[1] && motor_enabled[0]) {
+					_actuator[0] = _thrust_rpyt_out[0]; // motor 1
+					_actuator[3] = _thrust_rpyt_out[3]; // motor 4
+					_actuator[2] = _thrust_rpyt_out[2]; // motor 3
+					_actuator[1] = _thrust_rpyt_out[1]; // motor 2
+				}
+				break;
+		}
+    }
+
+    // thrust vector
+    RC_Channel *csotrim = rc().channel(int8_t(11)); // channel 12 from 982 to 2006
+    float sotrim;
+    int16_t sotrimadd;
+    sotrim = (csotrim->get_radio_in() - 1494.0)/512.0*100.0;
+    sotrimadd = (int)sotrim;
+
+    // convert output to PWM and send to each motor
+    for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+        if (motor_enabled[i]) {
+        	// motor 5
+        	if (i == 4){
+        		int16_t value;
+				value = SRV_Channels::return_channel(SRV_Channel::k_motor5)->get_trim() + 200.0f * _actuator[i] + sotrimadd;
+				if (value > 1500){
+					value = 1500;
+				}
+        		rc_write(i, value);
+        	}
+        	// motor 6
+        	else if (i == 5){
+				int16_t value;
+				value = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 200.0f * _actuator[i] - sotrimadd;
+				if (value < 1500){
+					value = 1500;
+				}
+				rc_write(i, value);
+        	}
+        	// motor 7
+        	else if (i == 6){
+				int16_t value;
+				value = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 200.0f * _actuator[i] + sotrimadd;
+				if (value > 1500){
+					value = 1500;
+				}
+				rc_write(i, value);
+			}
+        	// motor 8
+        	else if (i == 7){
+				int16_t value;
+				value = SRV_Channels::return_channel(SRV_Channel::k_motor8)->get_trim() + 200.0f * _actuator[i] - sotrimadd;
+				if (value < 1500){
+					value = 1500;
+				}
+				rc_write(i, value);
+			}
+        	else if (i == 0) { // motor 1
+        		int16_t pwmoutput;
+
+				pwmoutput = output_to_pwm(_actuator[i]);
+
+        		// output
+        		int16_t value_trim;
+        		int16_t value;
+        		value_trim = SRV_Channels::return_channel(SRV_Channel::k_motor1)->get_trim();
+
+        		if (value_trim == 800) {
+        			value = 0;
+        		}
+        		else if (pwmoutput > 1510 && pwmoutput < 1590) {
+        			value = pwmoutput;
+        		}
+        		else {
+        			value  = value_trim - 1500.0f + pwmoutput;
+        		}
+        		rc_write(i, value);
+        	}
+        	else if (i == 1) { // motor 2 - same speed with motor 1
+        		int16_t pwmoutput;
+
+				pwmoutput = output_to_pwm(_actuator[i]);
+
+				// output
+				int16_t value_trim;
+				int16_t value;
+				value_trim = SRV_Channels::return_channel(SRV_Channel::k_motor2)->get_trim();
+
+				if (value_trim == 800) {
+					value = 0;
+				}
+				else if (pwmoutput > 1510 && pwmoutput < 1590) {
+					value = pwmoutput;
+				}
+				else {
+					value  = value_trim - 1500.0f + pwmoutput;
+				}
+				rc_write(i, value);
+			}
+        	else if (i == 2) { // motor 3 - same speed with motor 4
+        		int16_t pwmoutput;
+
+        		pwmoutput = output_to_pwm(_actuator[i]);
+
+        		// output
+        		int16_t value_trim;
+				int16_t value;
+				value_trim = SRV_Channels::return_channel(SRV_Channel::k_motor3)->get_trim();
+
+				if (value_trim == 800) {
+					value = 0;
+				}
+				else if (pwmoutput > 1510 && pwmoutput < 1590) {
+					value = pwmoutput;
+				}
+				else {
+					value  = value_trim - 1500.0f + pwmoutput;
+				}
+				rc_write(i, value);
+			}
+        	else if (i == 3) { // motor 4
+        		int16_t pwmoutput;
+
+
+				pwmoutput = output_to_pwm(_actuator[i]);
+
+				// output
+				int16_t value_trim;
+				int16_t value;
+				value_trim = SRV_Channels::return_channel(SRV_Channel::k_motor4)->get_trim();
+
+				if (value_trim == 800) {
+					value = 0;
+				}
+				else if (pwmoutput > 1510 && pwmoutput < 1590) {
+					value = pwmoutput;
+				}
+				else {
+					value  = value_trim - 1500.0f + pwmoutput;
+				}
+				rc_write(i, value);
+			}
+        	// others
+        	else {
+        		rc_write(i, output_to_pwm(_actuator[i]));
+        	}
+        }
+    }
+
+}
+
+
 // get_motor_mask - returns a bitmask of which outputs are being used for motors (1 means being used)
 //  this can be used to ensure other pwm outputs (i.e. for servos) do not conflict
 uint16_t AP_MotorsMatrix::get_motor_mask()
@@ -609,7 +807,7 @@ void AP_MotorsMatrix::output_armed_stabilizing()
     for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
         if (motor_enabled[i]) {
             // calculate the thrust outputs for roll and pitch
-            _thrust_rpyt_out[i] = roll_thrust * _roll_factor[i] + pitch_thrust * _pitch_factor[i];
+            _thrust_rpyt_out[i] = roll_thrust * 0.5f * _roll_factor[i] + pitch_thrust * 0.5f * _pitch_factor[i];
             // record lowest roll + pitch command
             if (_thrust_rpyt_out[i] < rp_low) {
                 rp_low = _thrust_rpyt_out[i];
@@ -623,9 +821,9 @@ void AP_MotorsMatrix::output_armed_stabilizing()
             // Exclude any lost motors if thrust boost is enabled
             if (!is_zero(_yaw_factor[i]) && (!_thrust_boost || i != _motor_lost_index)){
                 if (is_positive(yaw_thrust * _yaw_factor[i])) {
-                    yaw_allowed = MIN(yaw_allowed, fabsf(MAX(1.0f - (throttle_thrust_best_rpy + _thrust_rpyt_out[i]), 0.0f)/_yaw_factor[i]));
+                    yaw_allowed = MIN(yaw_allowed, fabsf(MAX(1.0f - (throttle_thrust_best_rpy + _thrust_rpyt_out[i]), 0.0f)/( 0.5f * _yaw_factor[i])));
                 } else {
-                    yaw_allowed = MIN(yaw_allowed, fabsf(MAX(throttle_thrust_best_rpy + _thrust_rpyt_out[i], 0.0f)/_yaw_factor[i]));
+                    yaw_allowed = MIN(yaw_allowed, fabsf(MAX(throttle_thrust_best_rpy + _thrust_rpyt_out[i], 0.0f)/(0.5f * _yaw_factor[i])));
                 }
             }
         }
@@ -652,9 +850,9 @@ void AP_MotorsMatrix::output_armed_stabilizing()
         // Exclude any lost motors if thrust boost is enabled
         if (!is_zero(_yaw_factor[_motor_lost_index])){
             if (is_positive(yaw_thrust * _yaw_factor[_motor_lost_index])) {
-                yaw_allowed = _thrust_boost_ratio * yaw_allowed + (1.0f - _thrust_boost_ratio) * MIN(yaw_allowed, fabsf(MAX(1.0f - (throttle_thrust_best_rpy + _thrust_rpyt_out[_motor_lost_index]), 0.0f)/_yaw_factor[_motor_lost_index]));
+                yaw_allowed = _thrust_boost_ratio * yaw_allowed + (1.0f - _thrust_boost_ratio) * MIN(yaw_allowed, fabsf(MAX(1.0f - (throttle_thrust_best_rpy + _thrust_rpyt_out[_motor_lost_index]), 0.0f)/(0.5f * _yaw_factor[_motor_lost_index])));
             } else {
-                yaw_allowed = _thrust_boost_ratio * yaw_allowed + (1.0f - _thrust_boost_ratio) * MIN(yaw_allowed, fabsf(MAX(throttle_thrust_best_rpy + _thrust_rpyt_out[_motor_lost_index], 0.0f)/_yaw_factor[_motor_lost_index]));
+                yaw_allowed = _thrust_boost_ratio * yaw_allowed + (1.0f - _thrust_boost_ratio) * MIN(yaw_allowed, fabsf(MAX(throttle_thrust_best_rpy + _thrust_rpyt_out[_motor_lost_index], 0.0f)/(0.5f * _yaw_factor[_motor_lost_index])));
             }
         }
     }
@@ -671,7 +869,7 @@ void AP_MotorsMatrix::output_armed_stabilizing()
     for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
         if (motor_enabled[i]) {
         	if (i == 0 || i == 1 || i == 2 || i == 3){
-        		_thrust_rpyt_out[i] = _thrust_rpyt_out[i] + yaw_thrust * _yaw_factor[i];
+        		_thrust_rpyt_out[i] = _thrust_rpyt_out[i] + yaw_thrust * 0.5f *  _yaw_factor[i];
 
         		// record lowest roll + pitch + yaw command
         		if (_thrust_rpyt_out[i] < rpy_low) {
@@ -744,6 +942,88 @@ void AP_MotorsMatrix::output_armed_stabilizing()
     // check for failed motor
     check_for_failed_motor(throttle_thrust_best_plus_adj);
 }
+
+
+void AP_MotorsMatrix::output_armed_stabilizing_sysid()
+{
+    uint8_t i;                          // general purpose counter
+    float   roll_thrust;                // roll thrust input value, +/- 1.0
+    float   pitch_thrust;               // pitch thrust input value, +/- 1.0
+    float   yaw_thrust;                 // yaw thrust input value, +/- 1.0
+    float   throttle_thrust;            // throttle thrust input value, 0.0 - 1.0
+
+    // get RC input from Roll, Pitch, Yaw
+    RC_Channel *croll = rc().channel(int8_t(0)); // channel 1 - Roll
+	int16_t roll_c;
+	roll_c = croll->get_radio_in();
+	float pilot_roll;
+	pilot_roll = (roll_c - 1494.0f)/256.0f;
+	_roll_in = constrain_float(_roll_in + pilot_roll, -1.0f, 1.0f);
+
+	RC_Channel *cpitch = rc().channel(int8_t(1)); // channel 2 - Pitch
+	int16_t pitch_c;
+	pitch_c = cpitch->get_radio_in();
+	float pilot_pitch;
+	pilot_pitch = (pitch_c - 1494.0f)/512.0f;
+	_pitch_in = constrain_float(_pitch_in - pilot_pitch, -1.0f, 1.0f);
+
+	RC_Channel *cthrottle = rc().channel(int8_t(2)); // channel 3 - Throttle
+	int16_t throttle_c;
+	throttle_c = cthrottle->get_radio_in();
+	float pilot_throttle;
+	pilot_throttle = (throttle_c - 982.0f)/1024.0f + 0.044;
+
+	RC_Channel *cyaw = rc().channel(int8_t(3)); // channel 4 - Yaw
+	int16_t yaw_c;
+	yaw_c = cyaw->get_radio_in();
+	float pilot_yaw;
+	pilot_yaw = (yaw_c - 1494.0f)/512.0f;
+	_yaw_in = constrain_float(_yaw_in + pilot_yaw, -1.0f, 1.0f);
+
+    // apply voltage and air pressure compensation
+    roll_thrust = _roll_in;
+    pitch_thrust = _pitch_in;
+    yaw_thrust = _yaw_in;
+    throttle_thrust = pilot_throttle;
+
+    for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+        if (motor_enabled[i]) {
+            // calculate the thrust outputs for roll and pitch
+            _thrust_rpyt_out[i] = roll_thrust * _roll_factor[i] + pitch_thrust * _pitch_factor[i];
+        }
+    }
+
+    // calculate the maximum yaw control that can be used
+    // todo: make _yaw_headroom 0 to 1
+    float yaw_allowed = (float)_yaw_headroom / 1000.0f;
+
+    // add yaw control to thrust outputs
+    for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+        if (motor_enabled[i]) {
+        	if (i == 0 || i == 1 || i == 2 || i == 3){
+        		_thrust_rpyt_out[i] = _thrust_rpyt_out[i] + yaw_allowed * yaw_thrust * _yaw_factor[i];
+        	}
+        }
+    }
+
+    // add scaled roll, pitch, constrained yaw and throttle for each motor
+    for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+        if (motor_enabled[i]) {
+        	if (i == 0 || i == 1 || i == 2 || i == 3){
+        		_thrust_rpyt_out[i] = _thrust_rpyt_out[i] + throttle_thrust * _throttle_factor[i];
+        		_thrust_rpyt_out[i] = constrain_float(_thrust_rpyt_out[i], 0.0f, 1.0f);
+        	}
+        }
+    }
+
+    // determine throttle thrust for harmonic notch
+    // compensation_gain can never be zero
+    _throttle_out = throttle_thrust;
+
+    // check for failed motor
+    // check_for_failed_motor(throttle_thrust);
+}
+
 
 // check for failed motor
 //   should be run immediately after output_armed_stabilizing
@@ -1604,7 +1884,7 @@ void AP_MotorsMatrix::setup_motors(motor_frame_class frame_class, motor_frame_ty
     } // switch frame_class
 
     // normalise factors to magnitude 0.5
-    normalise_rpy_factors();
+	// normalise_rpy_factors();
 
     set_initialised_ok(success);
 }

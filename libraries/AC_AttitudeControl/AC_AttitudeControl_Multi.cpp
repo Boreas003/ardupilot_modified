@@ -416,10 +416,6 @@ void AC_AttitudeControl_Multi::rate_controller_run()
 		int16_t back;
 		back = cback->get_radio_in();
 
-		// system id
-		RC_Channel *csysid = rc().channel(int8_t(7)); // channel 8 low-998/mid-1571/high-2012
-		int16_t sysid;
-		sysid = csysid->get_radio_in();
 
 		if (back > 1500){ // back
 			_motors.set_roll(get_rate_roll_pid().update_all(_ang_vel_body.x, gyro_latest.x, _motors.limit.roll) + _actuator_sysid.x);
@@ -432,26 +428,14 @@ void AC_AttitudeControl_Multi::rate_controller_run()
 			_motors.set_yaw_ff(get_rate_yaw_pid().get_ff()*_feedforward_scalar);
 		}
 		else { // forward
-			if (sysid < 1500) {
-				_motors.set_roll(0.5f*get_rate_roll_pid().update_all(_ang_vel_body.x, gyro_latest.x, _motors.limit.roll) + _actuator_sysid.x);
-				_motors.set_roll_ff(get_rate_roll_pid().get_ff());
+			_motors.set_roll(get_rate_roll_pid().update_all(_ang_vel_body.x, gyro_latest.x, _motors.limit.roll) + _actuator_sysid.x);
+			_motors.set_roll_ff(get_rate_roll_pid().get_ff());
 
-				_motors.set_pitch(0.5f*get_rate_pitch_pid().update_all_pitch(_ang_vel_body.y, gyro_latest.y, _motors.limit.pitch) + _actuator_sysid.y);
-				_motors.set_pitch_ff(get_rate_pitch_pid().get_ff());
+			_motors.set_pitch(get_rate_pitch_pid().update_all_pitch(_ang_vel_body.y, gyro_latest.y, _motors.limit.pitch) + _actuator_sysid.y);
+			_motors.set_pitch_ff(get_rate_pitch_pid().get_ff());
 
-				_motors.set_yaw(0.5f*get_rate_yaw_pid().update_all(_ang_vel_body.z, gyro_latest.z, _motors.limit.yaw) + _actuator_sysid.z);
-				_motors.set_yaw_ff(get_rate_yaw_pid().get_ff()*_feedforward_scalar);
-			}
-			else {
-				_motors.set_roll(get_rate_roll_pid().update_all(_ang_vel_body.x, gyro_latest.x, _motors.limit.roll) + _actuator_sysid.x);
-				_motors.set_roll_ff(get_rate_roll_pid().get_ff());
-
-				_motors.set_pitch(get_rate_pitch_pid().update_all_pitch(_ang_vel_body.y, gyro_latest.y, _motors.limit.pitch) + _actuator_sysid.y);
-				_motors.set_pitch_ff(get_rate_pitch_pid().get_ff());
-
-				_motors.set_yaw(get_rate_yaw_pid().update_all(_ang_vel_body.z, gyro_latest.z, _motors.limit.yaw) + _actuator_sysid.z);
-				_motors.set_yaw_ff(get_rate_yaw_pid().get_ff()*_feedforward_scalar);
-			}
+			_motors.set_yaw(get_rate_yaw_pid().update_all(_ang_vel_body.z, gyro_latest.z, _motors.limit.yaw) + _actuator_sysid.z);
+			_motors.set_yaw_ff(get_rate_yaw_pid().get_ff()*_feedforward_scalar);
 		}
     }
     else if (fmode == 29) { // {ground mode}

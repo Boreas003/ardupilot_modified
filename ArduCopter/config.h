@@ -331,7 +331,7 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// Standby - uuv customed
+// Depth Control - uuv customed
 #ifndef MODE_DEPCTRL_ENABLED
 # define MODE_DEPCTRL_ENABLED ENABLED
 #endif
