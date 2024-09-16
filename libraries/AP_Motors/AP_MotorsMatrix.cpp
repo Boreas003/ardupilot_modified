@@ -291,7 +291,7 @@ void AP_MotorsMatrix::output_to_motors()
 				}
 				else {
 					value = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 500.0f * _actuator[i] - sotrimadd;
-					if (value < 1500){
+					if (value > 1500){
 						value = 1500;
 					}
 				}
@@ -306,7 +306,7 @@ void AP_MotorsMatrix::output_to_motors()
 				}
 				else {
 					value = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 500.0f * _actuator[i] + sotrimadd;
-					if (value > 1500){
+					if (value < 1500){
 						value = 1500;
 					}
 				}
@@ -600,7 +600,7 @@ void AP_MotorsMatrix::output_to_motors_sysid()
         	else if (i == 5){
 				int16_t value;
 				value = SRV_Channels::return_channel(SRV_Channel::k_motor6)->get_trim() + 200.0f * _actuator[i] - sotrimadd;
-				if (value < 1500){
+				if (value > 1500){
 					value = 1500;
 				}
 				rc_write(i, value);
@@ -609,7 +609,7 @@ void AP_MotorsMatrix::output_to_motors_sysid()
         	else if (i == 6){
 				int16_t value;
 				value = SRV_Channels::return_channel(SRV_Channel::k_motor7)->get_trim() + 200.0f * _actuator[i] + sotrimadd;
-				if (value > 1500){
+				if (value < 1500){
 					value = 1500;
 				}
 				rc_write(i, value);

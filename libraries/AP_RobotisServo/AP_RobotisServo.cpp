@@ -495,16 +495,16 @@ void AP_RobotisServo::update()
         	//if (pwm < 1400 || pwm > 1600) { // Check that pwm is out of deadzone
 			// servo 10
 			if (op_mode[9] != OPMODE_CURR_CONTROL) { reconfig_servo(10, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
-			if ( pwm < 1400 ) {send_command(10, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(10, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(10, REG_GOAL_CURRENT, 0, 2);}
+			if ( pwm < 1400 && pwm >100 ) {send_command(10, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(10, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(10, REG_GOAL_CURRENT, 0, 2);}
 			// servo 17 - original 12
 			if (op_mode[16] != OPMODE_CURR_CONTROL) { reconfig_servo(17, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
-			if ( pwm < 1400 ) {send_command(17, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(17, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(17, REG_GOAL_CURRENT, 0, 2);}
+			if ( pwm < 1400 && pwm >100 ) {send_command(17, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(17, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(17, REG_GOAL_CURRENT, 0, 2);}
 			// servo 18 - original 14
 			if (op_mode[17] != OPMODE_CURR_CONTROL) { reconfig_servo(18, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
-			if ( pwm < 1400 ) {send_command(18, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(18, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(18, REG_GOAL_CURRENT, 0, 2);}
+			if ( pwm < 1400 && pwm >100 ) {send_command(18, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(18, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(18, REG_GOAL_CURRENT, 0, 2);}
 			// servo 19 - original 16
 			if (op_mode[18] != OPMODE_CURR_CONTROL) { reconfig_servo(19, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
-			if ( pwm < 1400 ) {send_command(19, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(19, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(19, REG_GOAL_CURRENT, 0, 2);}
+			if ( pwm < 1400 && pwm >100 ) {send_command(19, REG_GOAL_CURRENT, -cur_max, 2);} else if (pwm > 1600) { send_command(19, REG_GOAL_CURRENT, cur_max, 2); } else { send_command(19, REG_GOAL_CURRENT, 0, 2);}
         		/*
 				if (op_mode[i] != OPMODE_CURR_CONTROL) { reconfig_servo(i+1, OPMODE_CURR_CONTROL); } // Check that servo is in curr mode, if not, reconfigure
 				if ( pwm < 1500 ) {send_command(i+1, REG_GOAL_CURRENT, -cur_max, 2);} else { send_command(i+1, REG_GOAL_CURRENT, cur_max, 2); }*/
